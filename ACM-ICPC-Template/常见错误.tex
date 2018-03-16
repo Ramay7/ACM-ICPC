@@ -1,0 +1,16 @@
+\input{style}
+\begin{document}
+
+\section{常见错误}
+\begin{enumerate}
+\item 递归时隐藏的修改了全局变量，例如点分治重心，树型dp$\rightarrow$ \underline{每次复制一遍，开vector}
+\item 测试数据时未将空间开到题目要求,隐藏的空间倍数关系，例如无向图2倍(RE)
+\item \underline{除数是个减法式子}: 整数：RE，浮点数：WA $\rightarrow$特判
+\item \underline{乘法取模},$a*b \rightarrow a\% mod*(b\% mod)\% mod$，必要时用快速乘法(注意正负数)
+\item $two\  pointers$的时候，相等时移动指针 $\rightarrow$小心重复数据，死循环
+\item 利用欧拉定理降幂的时候$x\% mod$ $\rightarrow$ \underline{特判$x\% mod==0$}，此时答案是0啊
+\item dp时尽量\underline{滚动数组}，防止MLE
+\end{enumerate}
+
+
+\end{document}

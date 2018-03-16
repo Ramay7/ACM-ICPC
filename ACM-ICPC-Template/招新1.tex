@@ -1,0 +1,217 @@
+\input{style}
+
+\begin{document}
+
+\section{苏州大学ACM集训队2016级招新笔试}
+
+\noindent 1.一个狭长的停车场，它的宽度只能容纳一辆车，并且它只有一个口与外界相通，既是出口也是入口，这个口一次同样只能容纳一辆车进入或驶出，也就是说，最后一辆进入停车场的车会将在它之前进入的车堵在停车场内。有一天，无聊的小谈同学观察到了8辆不同的车进入且驶出了停车场，假设按照它们进入停车场的顺序给车辆编号为1、2、3、4、5、6、7、8，那么下列哪一个不可能是车辆驶出停车场的编号：$\underline{\qquad \qquad }$ \\
+A. 8、7、6、5、4、3、2、1\qquad  B. 3、2、7、6、4、5、1、8 \\
+C. 5、4、6、3、2、7、8、1\qquad  D. 1、2、3、4、5、6、7、8 \\
+
+\noindent 2.以下这些小数是某些无限小数的近似结果，它们原本的数可以用很简单的方法表达，请调用你强大的想象能力把他们原本的数写出来，例如： \\
+$1.4142135624=\sqrt {2}$  \\
+$0.7853981634=\frac{\pi}{4}$ \\
+请回答： \\
+$2.7182818285=\underline{\qquad \qquad }$\\
+$1.6180339887=\underline{\qquad \qquad }$\\
+$0.6931471806=\underline{\qquad \qquad }$\\
+
+\noindent 3.欧几里得算法，又称辗转相除法，最早在《几何原本》中出现，它可以用来计算两个数的最大公约数。辗转相除法根据如下定理而来，已知$a,b,c$为正整数，若$a$ 除以$b$ 余$c$，则$(a,b)=(b,c)$，其中$(x,y)$ 表示$x$ 和$y$的最大公约数。 \\
+
+辗转相除法一般有两种写法，请根据上述过程补全代码，实现辗转相除法的python代码，其中函数$def\quad gcd(x,y)$传入两个正整数$x,y$，返回值为它们的最大公约数。
+\begin{itemize}
+\item 递归形式
+\end{itemize}
+\begin{lstlisting}
+def gcd(x, y):
+    if y == 0:
+        return x
+    else:
+        return gcd(_________, _________)
+\end{lstlisting}
+\begin{itemize}
+\item 非递归形式
+\end{itemize}
+\begin{lstlisting}
+def gcd(x, y):
+    r = 0
+    while(y != 0):
+        r = _________
+        x = _________
+        y = r
+    return x
+\end{lstlisting}
+
+\noindent 4.请写出下面两段代码的运行结果
+\begin{lstlisting}
+import math
+a = []
+for i in range(0, 1000):
+    a.append(i)
+
+p = 233
+left = 0
+right = 999
+while(left <= right):
+    mid = math.floor((left + right) / 2)
+    if(a[mid] > p):
+        right = mid - 1
+    else:
+        left = mid + 1
+print(a[left])
+\end{lstlisting}
+运行结果：$\underline{\qquad \qquad }$
+
+\begin{lstlisting}
+import math
+a = []
+b = []
+for i in range(0, 500):
+    a.append(i)
+    b.append(i)
+b.reverse()
+for i in range(0, 500):
+    a.append(b[i])
+
+left = 0
+right = 999
+while(left < right):
+    mid = math.floor((left + right) / 2)
+    midmid = math.floor((mid + right) / 2)
+    if (a[mid] > a[midmid]):
+        right = midmid-1
+    else:
+        left = mid+1
+print(a[left])
+\end{lstlisting}
+运行结果：$\underline{\qquad \qquad }$ \\
+
+\noindent 5.我们把满足$x$是质数且$n\%x=0$ 的数$x$，叫做$n$的质因子，同时任何一个数都可表示成$n = p_{1}^{k_{1}}*p_{2}^{k_2}*{p_3}^{k_3}\cdots {p_t}^{k_t}$，其中$p_1,p_2\cdots p_t$为$n$含有的质因子，那么36,216,1296,7776四个数的因子数总和为:$\underline{\qquad \qquad }$，$298007187660000$的因子数个数为:$\underline{\qquad \qquad }$ \\
+
+\noindent 6、请你找出所有的$n$，使得无论这$n$个正方形每个的边长是多少，都没有办法拼成一个正方形。$n=\underline{\qquad \qquad }$\\
+
+\noindent 7、【2015江苏14】设向量$a_{k}=(\cos\frac{k\pi}{6},\sin \frac{k\pi}{6}+\cos \frac{k\pi}{6})$ 求$\sum_{k=1}^{6666666666}a_{k-1}\cdot a_{k} = \underline{\qquad \qquad}$（$\cdot$表示点乘，结果可以保留5位有效数字，也可以用根号表示）。 \\
+
+\noindent 8.运动会前期，你准备报名100m短跑，为了在运动会取得好成绩，你准备找香港记者进行跑步比赛，但是由于香港记者跑得实在太快了，为了能超过他的速度，你与魔法师签订契约，愿意用自己的生命交换自己的跑步速度，魔法师说你可以用10s的寿命让自己的跑步速度翻倍或者用1s的寿命使自己的跑步速度增加1m/s,现在你的速度是1m/s，而香港记者的速度是100m/s，那么你最少需要支付魔法师$\underline{\qquad \qquad }$s的寿命。 \\
+
+\noindent 9. \\
+\indent At the small zoo camel ask: "Mother Mother, why do we eyelashes so long?" Camel mother said: "When the wind came, the long
+    eyelashes will enable us to be able to see the direction of the storm." small camel asked: "Mother Mother, why do we camels back then, the die ugly!" camel mother, said: "This is called hump, you can help us store a lot of water and nutrients, so that we can tolerate more than a dozen in the desert day of potable water without conditions. "small camel asked:" Mother Mother, why do we so thick the soles of the feet? "camel mother said:" That will enable us to many of the body is not stuck in soft sand, to facilitate long-distance ah journey. "small camel pleased bad:" Wow, so useful that we ah!! But mother, why we are still in zoos, do not desert hiking? "\\
+\indent My talents to be useful, but now no one used. A good attitude + a successful teaching + an infinite stage = success. Each potential is unlimited, the key is to find a stage for their full potential.\\
+\indent Please calculate the number of occurrences of potential in the article above. \\
+$\underline{\qquad \qquad }$ \\
+
+\noindent 10.对于一个长度为$n$的数列$A\{A[1]，A[2]，\cdots，A[n]\}$，它的子序列是$B\{A[b_1]，A[b_2]\cdots A[b_m]\}$，其中$1
+\leq b_1 < b_2 < \cdots < b_m \leq n$，即子序列是从原序列中取出若干项，他们相对顺序不变所组成的序列。 \\
+如序列$\{1,3,2,4\}$，它有15个子序列 \\
+$\{1\},\{3\},\{2\},\{4\},\{1,3\},\{1,2\}$ \\
+$\{1,4\},\{3,2\},\{3,4\},\{2,4\},\{1,3,2\}$ \\
+$\{1,3,4\},\{1,2,4\},\{3,2,4\},\{1,3,2,4\}$ \\
+上升序列是该序列的项的值是递增的，如$\{1,3,5\}$。一个序列有若干上升子序列，其中子序列长度最长的称为最长上升子序列。$\{1,2,1,1,1,3,4\}$的最长上升子序列是$\{1,2,3,4\}$，长度为4。 \\
+
+现在有一个大写英文字母序列，对于序列中的每一种字母，你可以选择一个数，并将每一个该字母用那个数替换，如此可以得到一个数列，问如何替换可使得到数列的最长上升子序列最长，你只需要输出能够得到的最长长度。 \\
+例： \\
+输入： \\
+$ABAAAC$ \\
+输出： \\
+3 \\
+解释： \\
+$A\rightarrow 1\quad	B\rightarrow 2\quad	C\rightarrow 3\quad$得到：$121113$，最长上升子序列为$\{1,2,3\}$，长度为3 \\
+$A\rightarrow 1\quad	B\rightarrow 3\quad	C\rightarrow 2\quad$得到：$131112$，最长上升子序列为$\{1,3\}$，长度为2 \\
+$A\rightarrow 2\quad	B\rightarrow 1\quad	C\rightarrow 3\quad$得到：$212223$，最长上升子序列为$\{1,2,3\}$，长度为3 \\
+$A\rightarrow 2\quad	B\rightarrow 3\quad	C\rightarrow 1\quad$得到：$232221$，最长上升子序列为$\{2,3\}$，长度为2 \\
+$A\rightarrow 3\quad	B\rightarrow 1\quad	C\rightarrow 2\quad$得到：$313332$，最长上升子序列为$\{1,3\}$，长度为2 \\
+$A\rightarrow 3\quad	B\rightarrow 2\quad	C\rightarrow 1\quad$得到：$323331$，最长上升子序列为$\{2,3\}$，长度为2 \\
+还有如： \\
+$A\rightarrow 1\quad	B\rightarrow 1\quad	C\rightarrow 2\quad$得到：$111112$，最长上升子序列为$\{1,2\}$，长度为2 \\
+$\cdots $ \\
+其中最长长度为3。 \\
+
+\noindent 问：DWEIUDHWQIGSANPWQSCA \\
+$\underline{\qquad \qquad }$ \\
+
+\noindent 11.请问300000000内有多少个数含有9种素因子？$\underline{\qquad \qquad }$ \\
+
+\noindent 12.我的俩个茨木又吵架了，面对一只天邪鬼黄和一只天邪鬼青，五星茨木说我的伤害是他俩血量的最小公倍数，四星茨木说我的伤害是他俩血量之和。 现在给出你五星茨木的伤害$b$和四星茨木的伤害$a$,求天邪鬼黄血量$\underline{\qquad \qquad }$ 和天邪鬼青的血量$\underline{\qquad \qquad }$. \\
+
+\noindent 13.身为非酋的我已经抽了俩个茨木了，然而这俩个茨木却经常吵架。面对一个BOSS，他们常常争论谁能最后杀死他。 \\
+已知他们的伤害都可以在$1\sim 101$之间选择，假设一个BOSS的血量为$2016$，五星茨木（茨木$A$）先出手，四星茨木（茨木$B$）后出手，问那个茨木能最后杀死BOSS$\underline{\qquad \qquad }$。（两个茨木都不是笨蛋）假设BOSS血量随机，伤害可以在$1\sim m$之间选择，则五星茨木胜利的概率为$\underline{\qquad \qquad }$,四星茨木胜利的概率为$\underline{\qquad \qquad }$。 \\
+
+\noindent 14. \\
+$
+.\qquad \ \ \ \ \ \ \ 1 \\
+.\qquad \ \ \ \ \ 1 \ \ 1 \\
+.\qquad \ \ \ \ 1 \ \ 2\ \ 1 \\
+.\qquad \ \ \ 1 \ 3 \ \ 3\ \ 1 \\
+.\qquad \ \ 1 \ 4\ \ 6\ \ 4 \ \ 1 \\
+.\qquad \ 1\ 5\ 10\ 10\  5\ 1 \\
+$
+记第一个1为第0行，往下依次编号。其中三角形左右两斜边上的数字均为1，其他位置均为其两肩上的数之和。 \\
+给定任意杨辉三角的行数$n$，请输出杨辉三角中第$n$行中有$\underline{\qquad \qquad }$ 个偶数。 \\
+
+\noindent 15.已知斐波那契数列的通项公式为
+$$
+a_{n}=\frac{{({\frac{1+\sqrt 5}{2}})^{n} - ({\frac{1-\sqrt 5}{2}}})^{n}}{\sqrt 5}
+$$
+求?????????? \\
+
+\noindent 16.设$C[i] = a[i] – a[i-1], a[0] = 0$，求?????? \\
+PS: 结果请用?????和????????的形式表示出来。\\
+
+\noindent 17.请构造任意一组6个互不相同的正整数，使得它们相加之和等于它们的最小公倍数:$\underline{\qquad \qquad }$ \\
+
+\noindent 18.在一个7*8的棋盘上放置5个车(可以攻击所在的行和列)，求使放置的车不能互相攻击的方案数:$\underline{\qquad \qquad }$ \\
+
+\noindent 19.设函数$f(x)$的值为斐波那契数列的第$x$项。求$f(f(f(5)))= \underline{\qquad \qquad }$\\
+(注：斐波那契数列：$f(0)= f(1) = 1$,当$x > 1$时, $f(x) = f(x-1) + f(x-2)$ ) \\
+
+\noindent 20.设函数$f(x)(x \geq 0):$
+$$ f(x)=\left\{
+\begin{aligned}
+x \ \ \ \ \ \ \ \ \ \ &  & x \leq 2 \\
+f(x-3)+f(x-2)+f(x-1) &  & x > 2 
+\end{aligned}
+\right.
+$$
+设函数$g(x) = f(x) + f(x+1) + f(x+2)$\\
+设函数$k(x) = g(x) + g(x+1) + g(x+2)$ \\
+求 $k(100000)\ \%\ 100007 = \underline{\qquad \qquad }$ \\
+
+\noindent 21.数的重排 \\
+现在给出$N$个两两互不相同的乱序的正整数，现在需要将这些数调换顺序，使得：$a_1 > a_2 < a_3 > a_4 < a_5 \cdots$. 以此类推的形式，$a_i$表示数列的第$i$个数。问你该如何算法，要求效率尽可能高，请给出思路（必要时给出证明）。\\
+\\
+\\
+\\
+\noindent 22.开关灯 \\
+如下图所示，现在有一个3*3的网格，每个格子上有一盏灯，1代表灯亮着，0代表关着，而且每个格子上有一个按钮，每按一次这个按钮，其相邻格子的灯的状态将会反转（即：0变成1,1变成0），格子相邻的条件是：当且仅当他们有公共边。问该如何按按钮，才能使得下图的灯全部熄灭？（适当说明方法）
+\begin{table}[!hbp]
+\begin{tabular}{|c|c|c|}
+\hline
+ 0 &  0 &  1 \\
+\hline
+ 0 &  1 &  0 \\
+\hline
+ 1 &  0 &  1 \\
+\hline
+\end{tabular}
+\end{table} 
+\\
+\\
+\\
+\\
+\\
+\\
+Hint：为了更好地说明题意，如上图，如果我们按了最右下角格子的按钮，则图会变成：
+\begin{table}[!hbp]
+\begin{tabular}{|c|c|c|}
+\hline
+ 0 &  0 &  1 \\
+\hline
+ 0 &  1 &  1 \\
+\hline
+ 1 &  1 &  0 \\
+\hline
+\end{tabular}
+\end{table} 
+
+\end{document}

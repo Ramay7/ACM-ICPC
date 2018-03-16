@@ -1,0 +1,11 @@
+\BOOKMARK [0][-]{chapter.1}{STL}{}% 1
+\BOOKMARK [1][-]{section.1.1}{bitset}{chapter.1}% 2
+\BOOKMARK [2][-]{subsection.1.1.1}{用unsigned long值初始化bitset对象}{section.1.1}% 3
+\BOOKMARK [2][-]{subsection.1.1.2}{用string对象初始化bitset对象}{section.1.1}% 4
+\BOOKMARK [2][-]{subsection.1.1.3}{操作}{section.1.1}% 5
+\BOOKMARK [2][-]{subsection.1.1.4}{测试}{section.1.1}% 6
+\BOOKMARK [1][-]{section.1.2}{单调栈、单调队列}{chapter.1}% 7
+\BOOKMARK [2][-]{subsection.1.2.1}{单调栈}{section.1.2}% 8
+\BOOKMARK [2][-]{subsection.1.2.2}{单调队列}{section.1.2}% 9
+\BOOKMARK [1][-]{section.1.3}{list}{chapter.1}% 10
+\BOOKMARK [2][-]{subsection.1.3.1}{CF\040350\040E}{section.1.3}% 11

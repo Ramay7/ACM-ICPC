@@ -1,0 +1,395 @@
+\input{style}
+
+\begin{document}
+\section{单调栈、单调队列}
+
+\subsection{单调栈}
+单调队列和单调栈的时间复杂度都是:$O(n)$。 \\
+单调栈主要用于解决某个元素它向左向右为最大值或最小值的最大范围是什么。如果是最大值，那就要维护单调非递增栈（唯一最大就是单调递减栈），如果是最小值就要维护单调非递减栈（唯一最小就是单调递增栈）。
+\begin{lstlisting}
+//求数组每个数以其为区间唯一最小值的最大区间左右端点
+int top = 0, cur;
+for (int i = 1; i <= n; ++i) {
+    while (top) {
+        cur = sta[top];
+        if (data[cur] <= data[i]) break;//非唯一时去掉等号
+        --top;
+    }
+    if (top == 0) left[i] = 1;  //data[i] 的区间左端点
+    else left[i] = sta[top] + 1;
+    sta[++top] = i;
+}
+top = 0;
+for (int i = n; i >= 1; --i) {
+    while (top) {
+        cur = sta[top];
+        if (data[cur] <= data[i]) break;
+        --top;
+    }
+    if (top == 0) right[i] = n;
+    else right[i] = sta[top] - 1;
+    sta[++top] = i;
+}
+//如果是求以其为最大值，只需要把 <= 换为 >=
+\end{lstlisting}
+
+\underline {[POJ 3494]：给出一个$n*m$的01矩阵，求出最大全1子矩阵面积。数据范围：$n,m\leq 2000$} \\
+
+
+我们把每一行单独处理，把从这行向上连续延伸全为1的最大长度看成是矩形的高，那么每行其实就是求个最大矩形面积。 \\
+\begin{center}
+$height[i][j]$:第$i$行第$j$列元素往上最长的连续1长度
+\end{center}
+需要用$O(n^2)$的复杂度预处理出$height[]$，然后需要枚举每行，每行利用单调栈可以在$O(n)$复杂度得到最大矩形面积. 总的时间复杂度是:$O(n^2)$。
+
+\begin{lstlisting}
+const int MAX_N	= 2010;
+
+int n, m, ans;
+int mat[MAX_N][MAX_N];
+int height[MAX_N][MAX_N], sta[MAX_N], L[MAX_N], R[MAX_N];
+
+//height[i][j]: 第 i 行第 j 列元素往上最长的连续 1 长度
+//维护单调非递减栈
+void solve(int row)
+{
+	int top = 0, cur;
+	height[row][m + 1] = 0;
+	for (int j = 1; j <= m + 1; ++j) {
+		while (1) {
+			cur = sta[top];
+			if (height[row][cur] <= height[row][j]) break;
+			R[cur] = j;
+			--top;
+		}
+		L[j] = cur;
+		sta[++top] = j;
+	}
+	for (int j = 1; j <= m; ++j) {
+		if(mat[row][j] == 0) continue;
+		int len = R[j] - L[j] - 1;
+		ans = max(ans, height[row][j] * len);
+	//	printf("height[%d][%d] = %d len = %d\n", row, j, height[row][j], len);
+	}
+}
+
+int main()
+{
+	while (~scanf("%d%d", &n, &m)) {
+		for (int i = 1; i <= n; ++i) {
+			for (int j = 1; j <= m; ++j) {
+				scanf("%d", &mat[i][j]);
+			}
+		}
+		memset (height, 0, sizeof(height));
+		for (int j = 1; j <= m; ++j) {
+			for (int i = 1; i <= n; ++i) {
+				if (mat[i][j] == 1) {
+					height[i][j] = 1;
+					while (mat[++i][j] == 1) {
+						height[i][j] = height[i - 1][j] + 1;
+					}
+					--i;
+				}
+			}
+		}
+		ans = 0;
+		for (int i = 1; i <= n; ++i) { solve(i); }
+		printf("%d\n", ans);
+	}
+	return 0;
+}
+\end{lstlisting}
+
+\subsection{单调队列}
+单调队列主要用于解决满足特定条件的区间问题（如：区间最大值不超过k的最大区间长度,所有区间长度为k的最大元素值，长度不超过k的最大连续子序列和，区间最值差$\in[m,k]$的最大区间长度）。往往和前缀和结合在一起。需要判别队列应是何种单调性。\\
+
+\underline {$HDU\ 3530\ Subsequences$给$n(n\leq 10^5)$个数，求区间最值差$\in [m,k]$的最大区间长度}\\
+
+维护一个单调非递增队列和一个单调非递减队列，通过当前位置元素维护其单调性，然后调整队列首元素之差$diff$，使$diff\leq k$，判断调整后的$diff$是否满足$diff\geq m$,如果满足更新$ans$。
+\begin{lstlisting}
+memset(dec, 0, sizeof(dec));
+memset(inc, 0, sizeof(inc));
+int ans = 0, diff, pre = 0; //额外注意 pre 赋初值为0
+for (int i = 0; i < n; ++i) {
+    while (head_inc != tail_inc && data[i] < data[inc[tail_inc - 1]]) --tail_inc;
+    inc[tail_inc++] = i;
+
+    while (head_dec != tail_dec && data[i] > data[dec[tail_dec - 1]]) --tail_dec;
+    dec[tail_dec++] = i;
+
+    while(1) {
+        diff = data[dec[head_dec]] - data[inc[head_inc]];
+        if (diff > k) {
+            if (dec[head_dec] < inc[head_inc]) {
+                pre = dec[head_dec] + 1;  //注意区间首的位置
+                head_dec++;
+            } else {
+                pre = inc[head_inc] + 1;
+                head_inc++;
+            }
+        } else break;
+    }
+    diff = data[dec[head_dec]] - data[inc[head_inc]];
+    if(diff >= m) ans = max(ans, i - pre + 1);
+}
+\end{lstlisting}
+
+\clearpage
+\section{莫比乌斯反演}
+
+\subsection{积性函数}
+定义域为$N^+$的函数$f$，对于任意两个互质的正整数$a,b即:gcd(a,b) =1$，均满足$f(ab)= f(a)*f(b)$，则函数$f$被称为积性函数。假如对于任意两个正整数$a,b$均有$f(ab) =f(a)*f(b)$，则称$f$为完全积性函数。 \\
+欧拉函数时积性函数，但不是完全积性函数。 \\
+积性函数的性质： \\
+\begin{itemize}
+\item $f(1) = 1$ \\
+\item 考虑一个大于1的正整数$N$，设$N = \prod p_i^{a_i}$,其中$p_i$为互不相同的质数，那么对于一个积性函数$f$,$f(N)=f(\prod p_i^{a_i})=\prod f(p_i^{a_i})$,如果$f$还满足完全积性，则$f(N)=\prod f(p_i)^{a_i}$ \\
+\item 若$f(n),g(n)$均为积性函数，则函数$h(n)=f(n)g(n)$也为积性函数。 \\
+\item 若$f(n)$为积性函数，则函数$F(n)=\sum_{d|n}{}f(d)$也是积性函数，反之亦然。
+\end{itemize}
+
+\subsection{狄利克雷卷积}
+对于函数$f,g,$定义它们的卷积为$(f*g)(n)=\sum_{d|n}f(d)g(\frac{n}{d})$。 \\
+性质： \\
+\begin{itemize}
+\item $f∗(g∗h)=(f∗g)∗h$
+\item $f∗(g+h)=f∗g+f∗h$
+\item $f∗g=g∗f$
+\item 两个积性函数的狄利克雷卷积仍是积性函数
+\end{itemize}
+
+\subsection{莫比乌斯反演公式}
+$$F(n) =\sum_{d|n}f(d) \rightarrow f(n)=\sum_{d|n} \mu(d)F(\frac{n}{d}) $$ \\
+$$F(n)=\sum_{n|d}f(d) \rightarrow f(n) =\sum_{n|d} \mu (\frac{d}{n})F(d)$$
+
+\subsection{莫比乌斯函数$\mu$}
+\begin{itemize}
+\item \[ \mu(d)=
+\begin{cases}{}
+1  &  {n = 1}\\
+(-1)^{k}&  n = p_1p_2\dots p_{k}(p_i\ are\ all\ prime\ numbers)\\
+0 &  other\  cases
+\end{cases}
+\]
+\item $\sum_{d|n}{}\mu(d) = (n == 1 ? 1 : 0)$ \\
+\item 对任意正整数$n$有:$\sum_{d|n}\frac{\mu(d)}{d} = \frac{\phi(n)}{n}$ \\
+\end{itemize}
+
+设$f(n) = \sum_{d|n}\phi(d)$,又有$\sum_{d|n}\phi(d) = n$,所以$f(n) = n$,根据莫比乌斯反演可得:\\
+$\phi(n)= \sum_{d|n}\mu(d)f(\frac{n}{d}) = \sum_{d|n}\frac{\mu(d)n}{d}$ \\
+
+\subsection{线性筛求解积性函数}
+观察线性筛中的步骤，筛掉$n$的同时还得到了它的最小质因数$p$，我们希望知道$p$在$n$中的次数 ，这样就能利用$f(n) = f(p^k)f(\frac{n}{p^k})$求出$f(n)$. \\
+令$n=pm$，由于$p$是$n$的最小质因子，若$p^2|n$,则$p|m$并且$p$也是$m$的最小质因子，这样在筛的同时记录每个合数最小质因子的次数，就能算出新筛去合数最小质因子的次数。但是这样时不够的，我们需要快速求出$f(p^k)$，这时就要结合$f$函数的性质考虑。\\
+例如欧拉函数$\phi，\phi(p^k)=(p-1)p^{k-1}$因此在进行筛时，如果$p|m$,就乘上$p$,否则乘上$p-1$.而对于莫比乌斯函数$\mu$，只有当$k=1$时$\mu(p^k)=-1,否则\mu(p^k)=0$，和欧拉函数一样根据$m$是否被$p$整除进行判断。
+\begin{lstlisting}
+void GetMu()
+{
+	memset(vis, 0, sizeof(vis));
+	mu[1] = 1;
+	prime_cnt = 0;
+	for(int i = 2; i < MAX_N; i++) {
+		if(vis[i] == 0) {
+			prime[prime_cnt++] = i;
+			mu[i] = -1;
+		}
+		for(int j = 0; j < prime_cnt && i * prime[j] < MAX_N; j++) {
+			vis[i * prime[j]] = 1;
+			if(i % prime[j]) mu[i * prime[j]] = -mu[i];
+			else{
+				mu[i * prime[j]] = 0;
+				break;
+			}
+		}	
+	}
+}
+\end{lstlisting}
+
+\underline {[ZOJ 3435]:$\sum_{i=0}^{i=a}\sum_{j=0}^{j=b}\sum_{k=0}^{k=c}[gcd(i,j,k)==1],a,b,c\in [1,1000000]$}
+
+\begin{enumerate}
+\item 当$i=j=k=0$时是不成立的。 \\
+\item 当$i,j,k$中有两个为$0$时,只有三种情况$(0,0,1),(0,1,0),(1,0,0)$. \\
+\item 当$i,j,k$中有一个为$0$时,相当于求$gcd(i,j)=1,gcd(i,k)=1,gcd(j,k)=1)$的对数。 \\
+\item 当$i,j,k$均大于$0$时，相当于求$gcd(i,j,k)=1(i\in [1,a],j\in[1, b],k\in[1,c])$的对数。 \\
+\end{enumerate}
+对于$3.4$两种情况用莫比乌斯反演即可。 \\
+
+\begin{lstlisting}
+GetMu();
+int a, b, c;
+while(~scanf("%d%d%d", &a, &b, &c)){
+a--, b--, c--;
+if(a > b) swap(a, b);
+if(a > c) swap(a, c);
+if(b > c) swap(b, c);
+// a <= b <= c
+ll ans = 3, tmp;
+int last, x, y, z;
+for(int i = 1; i <= b; i = last + 1) { // 注意枚举的范围
+	last = i;
+	x = a / i, y = b / i, z = c / i;
+	if(i <= a){
+		last = min(a / x, b / y);
+		last = min(last, c / z);
+	}else { // 防止出现除以0
+		last = min(b / y, c / z);
+	}
+	tmp = (ll) x * y * z + (ll)x * y + (ll)x * z + (ll)y * z;
+	ans += tmp * (sum[last] - sum[i - 1]);
+}
+printf("%lld\n", ans);	
+\end{lstlisting}
+
+\underline {$gcd(x,y)=p\ (p$为质数,$x\in[1,n],y\in[1,m]\ )$,有序对$(x,y)$有多少对？$n,m\in [1,10^7]$} \\
+
+$(2, 3)$和$(3,2)$是不同的有序对 \\
+定义:$f(d)$为满足$gcd(x,y)=d\ (x\in [1,n],y\in[1,m]$的$(x,y)$的对数。 \\
+定义:$F(d)$为满足$d\ |\ gcd(x,y)\ (x\in [1,n],y\in[1, m]$的$(x,y)$的对数。 \\
+那么有:$F(n) = \sum_{n|d}f(d)=\frac{n}{d}*\frac{m}{d}$,根据第二种形式的莫比乌斯反演有: \\ $$f(x)=\sum_{x|d}\frac{\mu(d)}{x}F(d)=\sum_{x|d}\mu(\frac{d}{x})*\frac{n}{d}*\frac{m}{d}$$
+题目要求是求$gcd(x,y)$为质数,对于每个质数$p$相当于求$x\in [1,\frac{n}{p}],y \in [1,\frac{m}{p}]$的$gcd(x,y)=1$的有序对$(x,y)$的对数.我们枚举每个质数$p$，就有$ans = \sum_{p}^{min(n,m)}(\sum_{d}^{min(n,m)}\mu(d)*\frac{n}{pd}*\frac{m}{pd})$,直接枚举的话会TLE, 所以继续优化。令$T= pd$，那么可得:$ans=\sum_{p}^{min(n,m)}(\sum_{d}^{min(n,m)}\mu(d) * \frac{n}{T}*\frac{m}{T})=\sum_{T=1}^{min(n,m)}\frac{n}{T}*\frac{m}{T}*(\sum_{p|T}\mu(\frac{T}{p}))$.所以我们可以预处理出所有的$T$对应的$\sum_{p|T}\mu(\frac{T}{p})$.\\
+设$sum(x)=\sum_{p|x}\mu({\frac{x}{p}})$,这里$p$为素数,令$g(x)=\mu(\frac{x}{p})$.我们枚举每一个$k$,得到$g(kx)=\mu(\frac{kx}{p})$,分情况讨论有: \\
+\begin{itemize}
+\item $x \% k == 0$,\[ g(kx)=
+\begin{cases}{}
+\mu(x) &  {k = p}\\
+0& {k!=p}
+\end{cases}
+\]
+\item $x \%k != 0 $,\[ g(kx)=
+\begin{cases}{}
+\mu(x) &  {k = p}\\
+\mu(x) - g(x)& {k!=p}
+\end{cases}
+\]
+\end{itemize}
+
+$\lfloor\frac{N}{d}\rfloor$的取值只有$2\lfloor\sqrt {N}\rfloor$种,同理$\lfloor\frac{M}{d}\rfloor$的取值也只有$2\lfloor\sqrt{M}\rfloor$种，并且相同取值对应的$d$是一个连续的区间，因此$\lfloor\frac{N}{d}\rfloor$和$\lfloor\frac{M}{d}\rfloor$都相同的区间最多有$2\lfloor\sqrt{N}\rfloor+2\lfloor\sqrt{M}\rfloor$个，这样$d$的枚举量就缩小为$O(\sqrt{N}+\sqrt{M})$了。
+
+\begin{lstlisting}
+typedef long long ll;
+const int MAX_N = 10000010;
+
+bitset<MAX_N> bs;
+int prime_cnt, prime[MAX_N];
+ll g[MAX_N], mu[MAX_N], sum[MAX_N];
+//主函数中调用GetMu()
+void GetMu()
+{
+	bs.set();
+	mu[1] = 1;
+	prime_cnt = 0;
+	for(int i = 2; i < MAX_N; ++i) {
+		if(bs[i]) {
+			prime[prime_cnt++] = i;
+			mu[i] = -1;
+			g[i] = 1;
+		}
+		for(int j = 0; j < prime_cnt && i * prime[j] < MAX_N; ++j) {
+			bs[i * prime[j]] = 0;
+			if(i % prime[j]) {
+				mu[i * prime[j]] = - mu[i];
+				g[i * prime[j]] = mu[i] - g[i];
+			}else {
+				mu[i * prime[j]] = 0;
+				g[i * prime[j]] = mu[i];
+				break;
+			}
+		}
+	}
+	for(int i = 1; i < MAX_N; ++i) {
+		sum[i] = sum[i - 1] + g[i];
+	}
+}
+
+inline ll solve(int n, int m)
+{
+	int top = min(n, m), last;
+	ll ans = 0;
+	for(int i = 1; i <= top; i = last + 1) {
+		last = min(n / (n / i), m / (m / i));
+		ans +=(ll) (n / i) * (m / i) * (sum[last] - sum[i - 1]);
+	}
+	return ans;
+}
+\end{lstlisting}
+
+\underline {[BZOJ 2154]:$\sum_{i=1}^{i=n} \sum_{j=1}^{j=m}lcm(i,j)\ \%\ 100000009\  \ (n,m\leq 10^{7})$}
+
+$$\begin{aligned}
+ans &=\sum_{d=1}^{d=n}\sum_{i=1}^{i=n}\sum_{j=1}^{j=m}\frac{i*j}{d}\ (gcd(i,j)=d) \\
+&=\sum_{d=1}^{d=n}]\sum_{i=1}^{\frac{n}{d}}\sum_{j=1}^{\frac{m}{d}}\frac{i*j*d^2}{d}(gcd(i,j)=1) \\
+&=\sum_{d=1}^{n}d\sum_{i=1}^{\frac{n}{d}}\sum_{j=1}^{\frac{m}{d}}(i*j)(gcd(i,j)=1) \\
+\end{aligned}$$
+定义$f(d)=\sum_{i=1}^{a}\sum_{j=1}^{b}(i*j)\ (gcd(i,j)=d)$ \\
+定义$F(d)=\sum_{i=1}^{i=a}\sum_{j=1}^{j=b}(i*j)\ (gcd(i,j)\ \%\ d=0)$ \\
+易得$F(1)=sum(a,b)=\frac{a(a+1)}{2}*\frac{b(b+1)}{2}$ \\
+反演可得:
+
+$$\begin{aligned}
+f(1)&=\sum_{i=1}^{i=a}\sum_{j=1}^{j=b}(i*j)(gcd(i,j)=1,a\leq b) \\
+&=\sum_{x=1}^{a}\mu(x)*x^2\sum_{i=1}^{\frac{a}{x}}\sum_{j=1}^{\frac{b}{x}}(i*j) \\
+&=\sum_{x=1}^{a}\mu(x)*x^2\sum_{i=1}^{\frac{a}{x}}i*\sum_{j=1}^{\frac{b}{x}}j \\
+&=\sum_{x=1}^{a}\mu_(x)*x^2*sum(\frac{a}{x},\frac{b}{x}) \\
+\end{aligned}$$
+$$\therefore ans = \sum_{d=1}^{n}d\sum_{x=1}^{n'}\mu(x)*x^2*sum(\frac{n'}{x},\frac{m'}{x})(n'=\frac{n}{d},m'=\frac{m}{d})$$\\
+
+此时如果预处理出$\mu(x) * x^2$的前缀和求$ans$的复杂度是$O(\sqrt {n} *\sqrt{n})=O(n)$，对于本题而言是不够的。令$T= d*x$可得：$ans= \sum_{T=1}^{n}sum(\frac{n}{T},\frac{m}{T})\sum_{x|T}\frac{T}{x}*x^2*\mu(x)$.令$h[T] = \sum_{x|n}\frac{T}{x}*x^2*\mu(x)$，预处理出$h[T]$【因为$h(T)$ 是积性函数可以线性筛】，那么时间复杂度就变为$O(\sqrt n)$总的时间复杂度为$O(T\sqrt n)$($T$是测试组数)
+
+\begin{lstlisting}
+typedef long long ll;
+const int MAX_N =10000010;
+const ll mod = 100000009;
+
+bitset<MAX_N> bs;
+int prime_cnt, prime[MAX_N / 100 * 7];
+ll h[MAX_N], sum[MAX_N];
+// 主函数中调用GetMu()
+void GetMu()
+{
+	bs.set();
+	prime_cnt = 0;
+	h[1] = sum[1] = 1;
+	for(int i = 2; i < MAX_N; ++i) {
+		if(bs[i]) {
+			prime[prime_cnt++] = i;
+			h[i] = (ll)i * (1 - i) % mod;
+		}
+		for(int j = 0; j < prime_cnt && i * prime[j] < MAX_N; ++j ){
+			bs[i * prime[j]] = 0;
+			if(i % prime[j]) { // i 和 prime[j] 互质
+				h[i * prime[j]] = h[i] * h[prime[j]] % mod;
+			}else {
+// 从原始式子 (T)=sigma(mu(d)*d*d*(T/d)) ，对 T 质因子分解只需要考虑前两项
+				h[i * prime[j]] = h[i] * prime[j] % mod;
+				break;
+			}
+		}
+	}
+	for(int i = 1; i < MAX_N; ++i ) {
+		sum[i] = ((sum[i - 1] + h[i]) % mod + mod) % mod;
+	}
+}
+
+inline ll  work(int n, int  m)
+{
+	ll res1 = (ll) n * (n + 1) / 2 % mod;
+	ll res2 = (ll) m * (m + 1) / 2 % mod;
+	return res1 * res2 % mod;	
+}
+
+inline ll solve(int n, int m)
+{
+	int top = min(n, m), last;
+	ll res = 0;
+	for(int i = 1; i <= top; i = last + 1) {
+		last = min( n / (n / i), m / (m / i));
+		res = (res + (sum[last] - sum[i - 1] + mod) % mod
+                * work(n / i, m / i) % mod) % mod;
+	}
+	return res;
+}
+\end{lstlisting}
+
+\end{document}

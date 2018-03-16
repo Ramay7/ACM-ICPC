@@ -1,0 +1,103 @@
+\documentclass[UTF8]{book} % 使用book文档类型格式排版
+\usepackage{ctex}  %加载包，因为我们在用中文写文档，所以必须加载这个包，否则不支持中文
+
+%加入了一些针对XeTeX的改进并且加入了 \XeTeX 命令来输入漂亮的XeTeX logo
+\usepackage{xltxtra}
+%启用一些LaTeX中的功能
+\usepackage{xunicode}
+
+\usepackage{multicol}  %加载包
+\usepackage{amsmath} % 调用公式宏包
+\usepackage{amssymb} % 数学符号生成命令
+\usepackage{array} % 数组和表格制作
+\usepackage{booktabs} % 绘制水平表格线
+\usepackage{calc} %四则运算
+\usepackage{caption} % 插图和表格标题格式设置
+\usepackage{fancyhdr} % 页眉页脚设置
+\usepackage{graphicx} % 调用插图宏包
+\usepackage{multicol} % 多栏排版
+\usepackage{titlesec} % 章节标题格式设置
+
+%%%% 目录样式 %%%%
+\usepackage{titletoc}
+\titlecontents{chapter}[1pt]{\vspace{.5\baselineskip}\bfseries}
+    {{\thecontentslabel}\quad}{}
+    {\hspace{.5em}\titlerule*[10pt]{$\cdot$}\contentspage}
+\titlecontents{section}[2em]{\vspace{.25\baselineskip}\bfseries}
+    {\thecontentslabel\quad}{}
+    {\hspace{.5em}\titlerule*[10pt]{$\cdot$}\contentspage}
+
+\usepackage{color}
+\usepackage{xcolor} % 颜色处理
+%\usepackage{indentfirst} % 自动首行缩进
+%\setlength{\parindent}{2.22em} % 设置首行缩进的距离
+% 设置超链接颜色
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=black,citecolor=black]{hyperref} % 根据章节标题生成PDF书签
+
+%%%% 版面 %%%%
+\usepackage[top=0.5in,bottom=0.5in,left=1.25in,right=0.8in]{geometry}
+% 设置行距
+\linespread{1}
+\usepackage{lscape}
+\usepackage{listings} %插入代码,代码页需要加入[fragile]
+\usepackage{xeCJK}
+
+%\usepackage[slantfont,boldfont]{xeCJK} % 允许斜体和粗体
+
+%%%% fontspec 宏包 %%%%
+\usepackage{fontspec}
+% 指定字体
+%\setmonofont[Mapping={}]{Monaco}	%英文引号之类的正常显示，相当于设置英文字体
+%\setsansfont{Monaco} %设置英文字体 Monaco, Consolas,  Fantasque Sans Mono
+%\setmainfont{Monaco} %设置英文字体
+% \setCJKmainfont{方正兰亭黑简体}  %中文字体设置
+% \setCJKsansfont{华康少女字体} %设置中文字体
+% \setCJKmonofont{华康少女字体} %设置中文字体
+
+%%%%%%%%%% 图形支持宏包 %%%%%%%%%%
+\usepackage{graphicx}                % 嵌入png图像
+\usepackage{color,xcolor}            % 支持彩色文本、底色、文本框等
+%\usepackage{subfigure}
+%\usepackage{epsfig}                 % 支持eps图像
+%\usepackage{picinpar}               % 图表和文字混排宏包
+%\usepackage[verbose]{wrapfig}       % 图表和文字混排宏包
+%\usepackage{eso-pic}                % 向文档的部分页加n副图形, 可实现水印效果
+%\usepackage{eepic}                  % 扩展的绘图支持
+%\usepackage{curves}                 % 绘制复杂曲线
+%\usepackage{texdraw}                % 增强的绘图工具
+%\usepackage{treedoc}                % 树形图绘制
+%\usepackage{pictex}                 % 可以画任意的图形
+%\usepackage{hyperref}
+
+%\setCJKmainfont{Kai}   % 设置缺省中文字体
+%\setCJKmonofont{Hei}   % 设置等宽字体
+%\setmainfont{Optima}   % 英文衬线字体
+%\setmonofont{Monaco}   % 英文等宽字体
+%\setsansfont{Trebuchet MS} % 英文无衬线字体
+
+\makeatletter
+\providecommand*\input@path{}
+\newcommand\addinputpath[1]{
+\expandafter\def\expandafter\input@path
+\expandafter{\input@path{#1}}}
+\addinputpath{body/}
+\makeatother
+
+\definecolor{keywordcolor}{rgb}{0.8,0.1,0.5}
+\lstset{language=C++, %用于设置语言为C++
+    numbers=left, %设置行号位置
+    numberstyle=\tiny, %设置行号大小
+    keywordstyle=\color{keywordcolor} \bfseries,
+    identifierstyle=,
+    basicstyle=\ttfamily,
+    commentstyle=\color{blue} \textit, %注释颜色
+    stringstyle=\ttfamily,
+    showstringspaces=false,
+    frame=shadowbox, %边框
+    %frame = single,
+    tabsize=2, %设置tab空格数
+    showspaces=false, %不显示空格
+    escapeinside=``, %逃逸字符(1左面的键)，用于显示中文
+    %breaklines, %自动折行
+    captionpos=b
+}

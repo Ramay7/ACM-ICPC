@@ -1,0 +1,316 @@
+%\input{style}
+
+%\begin{document}
+
+\chapter{字符串}
+
+\section{KMP}
+[HDU 1867]: 求两个字符串相加之后的最短长度。(首尾可重叠消去，两个字符串的长度$\leq 10^5$)。\\
+也可以哈希做。
+\begin{lstlisting}
+#include <bits/stdc++.h>
+using namespace std;
+
+string s1, s2;
+int nxt[100010];
+
+string solve(string S1, string S2) {
+    int n = S1.length(), m = S2.length();
+    nxt[0] = nxt[1] = 0;
+
+    int j = 0;
+    for (int i = 1; i < m; ++i) {
+        while (j && S2[i] != S2[j]) j = nxt[j];
+        if (S2[i] == S2[j]) ++j;
+        nxt[i + 1] = j;
+    }
+
+    j = 0;
+    for (int i = 0; i < n; ++i) {
+        while (j && S1[i] != S2[j]) j = nxt[j];
+        if (S1[i] == S2[j]) ++j;
+    }
+
+    string ret(S1);
+    for (int i = j; i < m; ++i) ret += S2[i];
+    return ret;
+}
+
+int main() {
+    while (cin >> s1 >> s2) {
+        string ans1 = solve(s1, s2);
+        string ans2 = solve(s2, s1);
+        int len1 = ans1.length(), len2 = ans2.length();
+        if (len1 < len2 || (len1 == len2 && ans1 < ans2))
+            cout << ans1 << endl;
+        else
+            cout << ans2 << endl;
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{Shift-And算法}
+
+基于位并行的算法，如Shift-And算法的基本思想是：将模式串集合与文本串的匹配状态用位向量存储，匹配过程就是用位操作更新位向量的过程。它的优点是所需存储空间小，匹配速度快；缺点是算法性能会随模式串个数的增多而下降，只适合中小规模的模式串集合。\\
+
+Shift-And算法维护一个字符串的集合，集合中的每个字符串既是模式串$p$的前缀，同时也是已读入文本的后缀。每读入一个新的文本字符，该算法采用位并行的方法更新该集合，该集合用一个位掩码$D=d_{m}...d_1$来表示。$D$的第$j$位被置为1，当且仅当$p_{1}…p_{j}$是$t_{1}…t_{i}$的后缀。 \\
+
+Shift-And算法首先构造一个$m$位($m$是模式串的长度)的向量表$B[]$，用来记录字符在模式串的出现位置。如果$p_j$为字符$c$，掩码$B[c]$的第$j$位被置为1，否则为0。首先置$D=0^m$，对于每个新读入的文本字符$t_{i+1}$，用如下公式对$D$进行更新：$D[i+1]=((D[i]<<1)|0^{m+1}1)\&B[t_{i+1}]$。在匹配时，逐个扫描文本字符并更新向量$D$，当$D[i]\&10^{m-1}≠0^{m}$时，在文本位置$i$处匹配成功。 \\
+
+Shift-And算法扩展到多模式串时，将所有模式串的位向量$D$包装到一个机器字里，用位并行技术同时对$r$个位向量进行更新，初始化字和匹配掩码分别是所有初始化字和所有匹配掩码的连接。 \\
+
+设机器字的长度为$w$，文本串的长度为$n$，模式串的个数为$r$，最短模式串长度为$m$，那么Shift-And算法的时间复杂度为$O(n\lceil \frac{m*r}{w}\rceil)$。由于采用了位并行技术，Shift-And算法的匹配速度是很快的。但一旦模式串的长度和超出机器字的长度，算法的性能都会发生明显下降。\\
+\underline{[2016 大连B]} \\
+
+给一个$n\leq 1000$，代表数字长度，以及每位上候选数字集合，再给一个数字字符串$s(|s|\leq 5*10^{6})$，输出$s$中所有匹配的$n$位数字子串。\\
+样例输入：\\
+4 （一共四位） \\
+3 0 9 7 （第一位有三个候选数字分别为：0 9 7） \\
+2 5 7   （第二位有两个候选数字分别为：5 7） \\
+2 2 5   （第三位有两个候选数字分别为：2 5） \\
+2 4 5   （第四位有两个候选数字分别为：4 5） \\
+09755420524 （数字字符串s） \\
+样例输出：（所有匹配的四位数字子串） \\
+9755 \\
+7554 \\
+0524 \\
+
+\begin{lstlisting}
+#include <inttypes.h>
+
+const int MAX_N = 1005;
+const int MAX_LEN = 10000005;
+const int MAX_ARR_LEN = ((MAX_N >> 6) + 5);
+const int MASK = 63;
+
+int n;
+ll num[10][MAX_ARR_LEN], ret_n[MAX_ARR_LEN];
+ll ind_x_arr[MAX_N], ind_y_arr[MAX_N];
+char str[MAX_LEN];
+
+void init() {
+	memset(num, 0, sizeof (num));
+	memset(ret_n, 0, sizeof (ret_n));
+	for (int i = 0; i < n; ++i) {
+		ind_x_arr[i] = (i >> 6) + 1; // i 位置属于哪一段
+		ind_y_arr[i] = 1ll << (i & MASK); // 二进制中对应的位置
+	}
+}
+
+inline void set_one(ll *arr, int pos) {
+	arr[ind_x_arr[pos]] |= ind_y_arr[pos];
+}
+
+inline bool seek_one(ll *arr, int pos) {
+	return arr[ind_x_arr[pos]] & ind_y_arr[pos];
+}
+
+inline void left_move_one(ll *arr, int pos) {
+	for (int i = pos; i >= 1; --i) {
+		arr[i] <<= 1;
+		arr[i] |= (!!(arr[i - 1] & 0x8000000000000000ll));
+	}
+	set_one(arr, 0);
+}
+
+inline void and_opt(ll *arr1, ll *arr2, int pos) {
+	for (int i = 1; i <= pos; ++i) {
+		arr1[i] &= arr2[i];
+	}
+}
+
+int main() {
+	scanf("%d", &n);
+	init();
+	for (int i = 0; i < n; ++i) {
+		int x, y;
+		scanf("%d", &x);
+		for (int j = 0; j < x; ++j) {
+			scanf("%d", &y);
+			set_one(num[y], i);
+		}
+	}
+	scanf("%s", str);
+	int len = strlen(str);
+	int L = n >> 6;
+	if (n & MASK) L++; // 分成若干段数
+	for (int i = 0; i < len; ++i) {
+		left_move_one(ret_n, L);
+		and_opt(ret_n, num[str[i] - '0'], L);
+		if (seek_one(ret_n, n - 1)) {
+			char ch = str[i + 1];
+			str[i + 1] = '\0';
+			printf("%s\n", str + i - n + 1);
+			str[i + 1] = ch;
+		}
+	}
+	return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{字典树}
+\subsection{HDU 1857}
+
+给出一个$n*m(n,m\in [20,500])$的字母表，对每个询问串输出它在字母表中的位置。可以从某个位置一直向右，一直向右下查找或者一直向下，输出最左上的起始位置。查找不到输出$(-1,-1)$。
+
+先把所有的询问串创建字典树，然后扫描字母表，看字母表中的串是否有在字典树中出现。
+\begin{lstlisting}
+const int MAX = 1000010;
+const int NUM = 26;
+const int dir[4][2] = {{0, 1}, {1, 1}, {1, 0}};
+
+int n, m;
+int child[MAX][NUM], bel[MAX];
+char mat[510][510];
+pair<int, int> ans[10010];
+
+struct Trie {
+    int tot, root;
+
+    void init() {
+        memset(child[1], 0, sizeof (child[1]));
+        tot = root = 1; bel[1] = 0;
+    }
+    void insert(const char* str, const int id) {
+        int* cur = &root;
+        for (const char* p = str; *p; ++p) {
+            cur = &child[*cur][*p - 'A'];
+            if (*cur == 0) {
+                *cur = ++tot;
+                memset(child[tot], 0, sizeof (child[tot]));
+                bel[tot] = 0;
+            }
+        }
+        bel[*cur] = id;
+    }
+    void query(const int x, const int y, const int id) {
+        int step = 0, tmpx = x, tmpy = y;
+        int* cur = &root;
+        while (1) {
+            if (step > 20 || tmpx >= n || tmpy >= m) return;
+            char ch = mat[tmpx][tmpy];
+            cur = &child[*cur][ch - 'A'];
+            if (*cur == 0) return;
+            int pos = bel[*cur];
+            if (pos != 0 && ans[pos].first == -1) ans[pos] = make_pair(x, y);
+            tmpx += dir[id][0], tmpy += dir[id][1];
+            step++;
+        }
+    }
+} dic;
+
+int main() {
+    scanf("%d%d", &n, &m);
+    for (int i = 0; i < n; ++i) scanf("%s", mat[i]);
+    char str[20];
+    getchar(); getchar();
+    int num = 0;
+    dic.init();
+    while (gets(str) && str[0] != '-') {
+        dic.insert(str, ++num);
+        ans[num] = make_pair(-1, -1);
+    }
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; ++j) {
+            for (int k = 0; k < 3; ++k) {
+                dic.query(i, j, k);
+            }
+        }
+    }
+    for (int i = 1; i <= num; ++i) printf("%d %d\n", ans[i].first, ans[i].second);
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{HDU 5536}
+
+给$n\leq 1000$个$\leq 1e9$的正整数$a_i$，从中找到三个互不相同的$a_i,a_j,a_k$使得$(a_i+a_j)\otimes a_k$最大。输出最大值。$\otimes$表示异或。
+
+把所有$a_i$从高位开始插进字典树，贪心查找。再支持一个删除操作就可以了，因为要保证互不相同。
+
+时间复杂度：$O(n^2 * 30)$，再乘上一个微小的常数。
+\begin{lstlisting}
+const int MAX = 1000010;
+const int NUM = 2;
+const int MAX_N = 1010;
+
+int child[MAX][NUM], cnt[MAX];
+
+struct Trie {
+    int root, tot;
+
+    void init() {
+        root = tot = 1;
+        child[1][0] = child[1][1] = 0;
+        cnt[1] = 1;
+    }
+    void insert(const int x) {
+        int* cur = &root;
+        for (int i = 30; i >= 0; --i) {
+            cur = &child[*cur][(x >> i) & 1];
+            if (*cur == 0) {
+                *cur = ++tot;
+                child[tot][0] = child[tot][1] = 0;
+                cnt[tot] = 0;
+            }
+            cnt[*cur]++;
+        }
+    }
+    void remove(const int x) {
+        int* cur = &root;
+        for (int i = 30; i >= 0; --i) {
+            cur = &child[*cur][(x >> i) & 1];
+            cnt[*cur]--;
+        }
+    }
+    int query(const int x) {
+        int ret = 0;
+        int* cur = &root;
+        for (int i = 30; i >= 0; --i) {
+            int now = (x >> i) & 1, store = *cur;
+            if (now == 0) {
+                cur = &child[*cur][1];
+                if (cnt[*cur]) ret += (1 << i);
+                else cur = &child[store][0];
+            } else {
+                cur = &child[*cur][0];
+                if (cnt[*cur]) ret += (1 << i);
+                else cur = &child[store][1];
+            }
+        }
+        return ret;
+    }
+} dic;
+
+int T, n;
+int a[MAX_N];
+
+int main() {
+    scanf("%d", &T);
+    while (T--) {
+        scanf("%d", &n);
+        dic.init();
+        for (int i = 1; i <= n; ++i) {
+            scanf("%d", &a[i]);
+            dic.insert(a[i]);
+        }
+        int ans = 0;
+        for (int i = 1; i <= n; ++i) {
+            dic.remove(a[i]);
+            for (int j = i + 1; j <= n; ++j) {
+                dic.remove(a[j]);
+                ans = max(ans, dic.query(a[i] + a[j]));
+                dic.insert(a[j]);
+            }
+            dic.insert(a[i]);
+        }
+        printf("%d\n", ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+%\end{document}

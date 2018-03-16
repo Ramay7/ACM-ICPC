@@ -1,0 +1,1086 @@
+%\input{style}
+%\begin{document}
+
+\chapter{基础}
+\setcounter{page}{1} %从当前页开始页码从1开始显示
+
+\section{常见错误}
+\begin{enumerate}
+\item 递归时隐藏的修改了全局变量，例如点分治重心，树型dp$\rightarrow$ \underline{每次复制一遍，开vector}
+\item 测试数据时未将空间开到题目要求,隐藏的空间倍数关系，例如无向图2倍(RE)
+\item \underline{除数是个减法式子}: 整数：RE，浮点数：WA $\rightarrow$特判
+\item \underline{乘法取模},$a*b \rightarrow a\% mod*(b\% mod)\% mod$，必要时用快速乘法(注意正负数)
+\item $two\  pointers$的时候，相等时移动指针 $\rightarrow$小心重复数据，死循环
+\item 利用欧拉定理降幂的时候$x\% mod$ $\rightarrow$ \underline{特判$x\% mod==0$}，此时答案是0啊
+\item dp时尽量\underline{滚动数组}，防止MLE
+\item 几何题能有int写的时候不要用double
+\item C++关闭同步后不要cin/cout和scanf/printf混用，会WA的！
+\item 如果出现斜率比较，使用叉积比较比使用斜率要安全！坐标要是$1e9*1e9$或者$1e9*1e18$级的开double！
+\item C++引用数组时，如果void fun(int *arr)虽然可以对数组arr进行赋值，改值操作，但是不能memset(),正确的方式应是：void fun(int (\&arr)[N])，其中N是数组长度。
+\item 出现判断条件if (a * b > c) return true; 是否有可能a*b爆long long，是否可以写成if (a > c / b) return true，还要考虑b是否为0.
+\end{enumerate}
+
+\section{思考角度}
+\begin{itemize}
+\item \large{random\_shuffle()}
+\item 二分思想
+\item 考虑问题反面
+\item 借助bfs/dfs状态预处理
+\end{itemize}
+
+\clearpage
+\section{奇巧淫技}
+
+\subsection{memset初始化极大极小值和较大较小值}
+\begin{lstlisting}
+typedef long long ll;
+const ll INF = 0x3f3f3f3f3f3f3f3fll; // 末尾的 ll 必不可少
+
+memset(arr, 0x3f, sizeof (arr)); // set int to 1061109567
+memset(arr, 0xc0, sizeof (arr)); // set int to -1061109568
+memset(arr, 0x7f, sizeof (arr)); // set int to 2139062143
+memset(arr, 0x80, sizeof (arr)); // set int to -2139062144
+
+memset(arr, 0x3f, sizeof (arr)); // set long long to 4.577e+18
+memset(arr, 0xc0, sizeof (arr)); // set long long to -4.577e+18
+memset(arr, 0x7f, sizeof (arr)); // set long long to 9.187e+18
+memset(arr, 0x80, sizeof (arr)); // set long long to -9.187e+18
+
+memset(arr, 0x43, sizeof (arr)); // set double to 1.08e+16
+memset(arr, 0xc2, sizeof (arr)); // set double to -4.13e+13
+memset(arr, 0x7f, sizeof (arr)); // set double to 1.38e+306
+memset(arr, 0xfe, sizeof (arr)); // set double to -5.3e+303
+\end{lstlisting}
+
+\subsection{二进制中1的个数}
+\begin{lstlisting}
+__builtin_popcount = int
+__builtin_popcountl = long int
+__builtin_popcountll = long long
+\end{lstlisting}
+
+\subsection{vector去重}
+\begin{lstlisting}
+vector<int>::iterator it = unique(vec.begin(), vec.end());
+vec.erase(it, vec.end());
+\end{lstlisting}
+
+\subsection{快速乘法}
+\begin{lstlisting}
+inline ll mulmod(ll x, ll y, ll mod) //正负数相乘均可
+{
+	ll ret = 0;
+	__asm__("movq %1,%%rax\n imulq %2\n idivq %3\n":
+            "=d"(ret):"m"(x),"m"(y),"m"(mod):"%rax");
+	return ret;
+}
+
+//非汇编版本
+ll mulmod(ll x, ll y, ll mod) //只能处理正数相乘的情况
+{
+	ll ret = 0, tmp = x;
+	while (y) {
+		if (y & 1) ret = (ret + tmp) % mod;
+		y> >= 1;
+		tmp = (tmp + tmp) % mod;
+	}
+	return ret;
+}
+\end{lstlisting}
+
+\subsection{快速开方}
+\begin{lstlisting}
+float InvSqrt(float x)
+{
+	int i;
+	float xhalf = 0.5 * x, y = x;
+	i = *(int *) & y;
+	i = 0x5f375a86 - ( i >> 1 );
+	y = *(float *) &i;
+	y = y * (1.5 - (xhalf * y * y));
+	y = y * (1.5 - (xhalf * y * y));  	
+	y = y * (1.5 - (xhalf * y * y));
+	return x * y;
+}
+\end{lstlisting}
+
+\subsection{高精度开根$a^{\frac{1}{b}}$}
+由于是找最接近的，可以先大致确定一个数$r$，那么可以通过$r=pow(a,1/b)$来计算，然后我们分别计算$(r-1)^b$,$r^b$,$(r+1)^b$，然后看这三个数哪个最接近$a$就行了。
+
+\begin{lstlisting}
+const double eps = 1e-8;
+const ll inf = (ll)(1e18) + 500;
+const ll INF = (ll)1 << 31;
+ll quick_pow(ll a, ll b) //快速幂求 a^b ，考虑溢出
+{
+    ll res = 1, tmp = a;
+    while(b) {
+        if(b & 1) {
+            double judge = 1.0 * inf / res;
+            if(tmp > judge) return -1;
+            res *= tmp;
+        }
+        b >>= 1;
+        if(tmp > INF && b > 0) return -1;
+        tmp = tmp * tmp;
+    }
+    return res;
+}
+
+ll find(ll a, ll b) {  //比较精确地求 a^(1/b) （向下取整）
+    ll r = (ll)(pow((double)(a), 1.0 / b) + eps);
+    ll p = quick_pow(r, b);
+    if(p == a) return r;
+    if(p == -1 || p > a) return r - 1;
+
+    ll t = quick_pow(r + 1, b);
+    if(t != -1 && t <= a) return r + 1;
+    else return r;
+}
+\end{lstlisting}
+
+\subsection{把所有点(向量)从第三象限开始逆时针排序}
+\begin{lstlisting}
+bool cmp(const Point& a, const Point& b)
+{
+  if (1ll * a.y * b.y <= 0) {
+    if (a.y > 0 || b.y > 0) return a.y < b.y;
+    if (a.y == 0 && b.y == 0) return a.x < b.x;
+  }
+  return a.cross(b) > 0;
+}
+\end{lstlisting}
+
+\subsection{求长度为$n$的有序数组$a$中$k$的个数}
+$lower\_bound()$是在已排序数组中二分查找指向满足$a[i] \geq k$的$a[i]$的最小指针； \\
+$upper\_bound()$是在已排序数组中二分查找指向满足$a[i] > k $的$a[i]$的最小指针。
+\begin{lstlisting}
+cnt = upper_bound(a, a + n, k) - lower_bound(a, a + n, k);
+\end{lstlisting}
+
+\subsection{C++关闭同步}
+\begin{lstlisting}
+ios_base::sync_with_stdio(0); cin.tie(0);
+\end{lstlisting}
+
+\subsection{cout浮点数控制精度输出}
+\begin{lstlisting}
+#include <iomanip>
+cout << fixed << setprecision(6) << ans << endl;
+\end{lstlisting}
+
+\subsection{快读}
+初级版：
+\begin{lstlisting}
+inline int Read(){
+    int x = 0; char ch = getchar();
+    while(ch < '0' || ch > '9') ch = getchar();
+    while(ch >= '0' && ch <= '9'){x = x * 10 + ch - '0';ch = getchar();}
+    return x;
+}
+\end{lstlisting}
+强化版：
+\begin{lstlisting}
+struct FastIO {
+	static const int S = 1000000;
+	int wpos, pos, len;
+	char wbuf[S];
+	FastIO():wpos(0){}
+	inline int xchar() {
+		static char buf[S];
+		if (pos == len) pos = 0, len = fread(buf, 1, S, stdin);
+		if (pos == len) return -1;
+		return buf[pos++];
+	}
+	inline int xint() {
+		int c = xchar(), x = 0;
+		while (c <= 32 && ~c) c = xchar();
+		if (c == -1) return -1;
+		for (; c >= '0' && c <= '9'; c = xchar()) x = x * 10 + (c - '0');
+		return x;
+	}
+} io;
+// 调用
+n = io.xint();
+// 读完标记
+if (n == -1) break;
+\end{lstlisting}
+
+\clearpage
+\section{结论}
+
+\subsection{判断$n$个整数坐标能否构成正$n$边形}
+给出$n$个二维坐标点且坐标都是整数，判断这$n$个整数点能否构成正$n$边形。因为坐标是整数点，所以当且仅当$n=4$时才有可能构成正四边形(正方形)。\\
+判断正方形的方法：(共6条边)将这$n$个点的两两距离求出，从小到大排序，最短的四条边一定相等且是正方形的边长，而且要保证对角线也相等且是边长的根号2倍(去边长的平方的话就是2倍)。对角线是排序后的最长两条边。
+\begin{lstlisting}
+scanf("%d", &n);
+for (int i = 0; i < n; i++) {
+    scanf("%d%d", &x[i], &y[i]);
+}
+if (n != 4) {
+    printf("NO\n");
+    continue;
+}
+int total = 0;
+for (int i = 0; i < n; i++) {
+    for (int j = i + 1; j < n; j++) {
+        edge[total++] = dis(i,j);
+    }
+}
+sort(edge, edge + total);
+if (edge[0] == edge[1] && edge[1] == edge[2] &&
+    edge[2] == edge[3] && edge[4] == edge[5] &&
+    edge[4] == 2 * edge[3]) {
+    printf("YES\n");
+} else {
+    printf("NO\n");
+}
+\end{lstlisting}
+
+\subsection{已知年月日计算星期几}
+\begin{lstlisting}
+inline int GetWeek(int year,int month,int day)
+{//返回值:1--7
+     //把一月二月当作前一年的 13,14 月
+     if (month == 1 || month == 2) {
+          month += 12;
+          year--;
+     }
+     //判断是否在 1752 年 9 月 3 日之前
+     if ((year < 1752) || (year == 1752 && month < 9)
+        || (year == 1752 && month == 9 && day <3)) {
+          return (day + month * 2 + 3 * (month + 1) / 5
+            + year + year  / 4 + 5) % 7 + 1;
+     } else {
+          return (day + month * 2 + 3 * (month + 1) / 5
+            + year + year / 4 - year / 100 + year / 400) % 7 + 1;
+     }
+}
+\end{lstlisting}
+
+\subsection{方格染色}
+给一个$n*m$的方格，可以选择从中选择一个矩形的两个顶点然后把这个矩形内的所有方格都染色，求坐标为$(i,j)$的方格被染色的概率？
+\begin{lstlisting}
+double GetProbability(int i,int j)
+{
+	double res = 1.0 * (i * j - 1) * ((n - i + 1) * (m - j + 1) - 1);
+	res += 1.0 * (i * (m - j + 1) - 1) * ((n - i + 1) * j - 1);
+	res -= (i - 1) * (n - i);
+	res -= (j - 1) *( m - j);
+	res = res * 2.0 + n * m * 2.0 - 1;
+	return res / n / n / m / m;
+}
+\end{lstlisting}
+
+\subsection{包含特定方格所有子矩阵面积和}
+一个位于$(x,y)$的方格，向左向右向上向下最多分别可以延伸:$a,b,c,d$个单位，求包含这个方格的所有子矩阵的面积和。 \\
+\begin{equation}
+\begin{split}
+S &= \sum{}{}(L+R-1) * (U+D-1)\quad (1\leq L\leq a,1\leq R \leq b,1\leq U\leq c,1\leq R\leq d) \\
+&= \sum_{1\leq L\leq a,1\leq R \leq b}^{}(L+R-1) *  \sum_{1\leq U\leq c,1\leq D \leq d}^{}(U+D-1) \\
+&= (\sum_{L=1}^{L=a}L*b+\sum_{R=1}^{R=b}R * a - a * b)*(\sum_{U=1}^{U=c}U*d+\sum_{D=1}^{D = d}D * c - c * d) \\
+&= (\frac{a*(a+1)}{2}*b+\frac{b*(b+1)}{2}*a-a*b)*(\frac{c*(c+1)}{2}*d+\frac{d*(d+1)}{2}*c-c*d)\\
+&= \frac{a*b*c*d*(a+b)*(c+d)}{4}
+\end{split}
+\end{equation}
+
+\subsection{$n$以内$gcd(a,b)=d$的无序对对数}
+
+\begin{equation}
+\begin{split}
+num[d] &= \sum_{a=1}^{a=n}\sum_{b=1}^{b=n}[gcd(a,b)==d]  \\
+&= 2*(\phi(1)+\phi(2)+\phi(3)+\cdots+\phi(\frac{n}{d}))-1 \\
+&= 2 * sum[\frac{n}{d}]-1
+\end{split}
+\end{equation}
+$sum[]$是欧拉函数的前缀和, $sum[1]=1$
+\subsection{$gcd({x}^{a}-1,{x}^{b}-1)=x^{gcd(a,b)}-1$}
+\subsection{方阵快速幂}
+对于任意$n$阶方阵来说，对于很大的整数$t$（比如$t=2^{10^{18}}$），想要在$Z_p$下求$A^t$（也就是求$A^t$ 其中逐项$\mod p$，其中$p$为素数）也是有办法的。记$W(n,p)=\prod_{i=0}^{n-1}(p^{n}-p^{i})$，则有：$A^t=A^{t\mod W(n,p)}$。 \\
+
+举个例子，如果是求斐波那契数列，想要用$2$阶矩阵刻画之，其中$p=10^{9}+7$，那么$W(2,p)=(P^{2}-1)(p^2-p)$。 虽然c/c++/pas 玩家额外需要用到高精度（位数大概有$36$位，且只是在快速幂的时候，幂次需要用高精度），但是计算斐波那契数列第$2^m$ 项的时间复杂度就从$O(\log (2^m))=O(m)$降低为$O(\log p)$。
+
+\clearpage
+\section{归并排序及利用归并排序求逆序对数}
+
+因为合并操作是从小到大进行的，当右边的$a[q]$复制到$T$中时，左边还没来得及复制到$T$中的那些数就是左边所有比$a[q]$大的数。此时在累加器中加上左边的元素个数$m-p$即可（左边剩余元素在区间$[p,m)$中，因此元素个数为$m-p$）.
+
+\begin{lstlisting}
+int a[10] = { 2,1,7,9,13,11,12,20 }, T[10];
+int cnt;
+
+void  MergeSort(int* a, int low, int high, int* T)
+{ //将数组 a[low...high-1] 从小到大排序，时间复杂度为 O(nlogn)
+    if (low + 1 < high)
+    {
+        int mid = (low + high) / 2;
+        MergeSort(a, low, mid, T);//排序 a[low...(mid-1)]
+        MergeSort(a, mid, high, T);//排序 a[mid...(high-1)]
+        int p = low, q = mid, i = low;
+        while (p < mid || q < high)//只要有一个序列非空就继续合并
+        {
+            if (q >= high || (p < mid&&a[p] < a[q]))
+            //复制第一个序列：
+            // 1 ：第二个序列空了
+            // 2 ：第二个序列非空并且第一个序列也非空且 a[p]<a[q]
+                T[i++] = a[p++];
+            else//复制第二个序列
+            {
+                T[i++] = a[q++];
+                cnt += mid - p;
+                for (int j = p; j < mid; j++)//输出逆序对
+                    printf("%d -- %d\n", a[j], a[q - 1]);
+            }
+        }
+        for (int i = low; i < high; i++)
+            a[i] = T[i];
+    }
+}
+
+int main()
+{
+    printf("原来数组是：\n");
+    for (int i = 0; i < 8; i++)
+        printf("%d ", a[i]);
+    printf("\n");
+    cnt = 0;//cnt 是逆序对数
+    MergeSort(a, 0, 8, T);
+    printf("排序后的数组是：\n");
+    for (int i = 0; i < 8; i++)
+        printf("%d ", a[i]);
+    printf("\n");
+    printf("逆序对数是：%d\n", cnt);
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+/***********Binary Indexed Tree***************/
+const int maxn = 500050;
+
+int n, tot;
+int bits[maxn];
+long long data[maxn],tmp[maxn];
+
+inline void update(int pos)
+{
+    while(pos <= tot){
+        bits[pos]++;
+        pos += (pos & (-pos));
+    }
+}
+
+inline int solve(int pos)
+{
+    int sum = 0;
+    while(pos > 0){
+        sum += bits[pos];//bits[pos] 存储从 1--id 中数字的个数
+        pos -= (pos & (-pos));
+    }
+    return sum;
+}
+
+int main()
+{
+    while (~scanf("%d",&n)&&n){
+        for (int i = 1; i <= n; i++) {
+            scanf("%lld",&data[i]);
+            tmp[i] = data[i];
+        }
+        sort(tmp + 1, tmp + n + 1);
+        tot = unique(tmp + 1, tmp + 1 + n) - tmp;
+        long long ans = 0;
+        memset(bits, 0, sizeof(bits));
+        /*
+        for (int i = n; i >= 1; i--) {
+            int id = lower_bound(tmp + 1, tmp + tot, data[i]) - tmp;
+            ans += solve(id);
+            //solve(id) 得到的是树状数组中比 data[i] 小的数字个数，
+            // 因为是倒着插入树状数组的，那么这个 solve(id) 就是 data[i] 的逆序数了
+            update(id);
+        }
+        */
+        //两种写法都可以
+        for (int i = 1; i <= n; i++){
+            int id = lower_bound(tmp + 1,tmp + tot, data[i]) - tmp;
+            ans += (i - solve(id) - 1);
+            //正着插入的话， solve(id) 就是 1~i-1 中比 data[i] 小的数字个数
+        //一共是 i-1 个数(去掉 data[i] )，所以由 data[i] 引起的逆序对数是 i-1-solve(id)
+            update(id);
+        }
+        printf("%lld\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\section{快排、利用快排查找第$k$大元素}
+
+输入$n\leq 10^ 7$个整数和一个正整数$k(1\leq k\leq n）$，输出这些整数从小到大排序后的第$k$个（例如，$k=1$就是最小值）。\\
+快速排序的时间复杂度为：最坏情况下：$O(n^2)$,平均情况下：$O(n\log n)$. \\
+查找数组中第$k$大的元素的平均时间复杂度为：$O(n)$.
+\begin{lstlisting}
+int a[10] = { 2,1,7,9,13,11,20,12 };
+
+void QuickSort(int* a, int low, int high)//将数组 a[low...high] 从小到大排序
+{
+    if (low < high) {
+        int i = low, j = high;
+        int pivot = a[low];//选取 a[low] 为基准
+        while (i < j) {
+            while (i < j && a[j] > pivot) j--;// j 从右向左找比 pivot 小的数
+            if (i < j) a[i++] = a[j];
+            while (i < j && a[i] < a[j]) i++;// i 从左向右找比 pivot 大的数
+            if (i < j) a[j--] = a[i];
+        }
+        a[i] = pivot;//将基准数插到“中间”
+        QuickSort(a, low, i - 1);//将左边排序
+        QuickSort(a, i + 1, high);//将右边排序
+    }
+}
+
+int find_kth_smallest(int* a, int low, int high, int k)
+{ //在数组 a[low...high] 中查找第 k 小的数
+    if (low < high) {
+        int i = low, j = high;
+        int pivot = a[low];
+        while (i < j) {
+            while (i<j && a[j]>pivot) j--;
+            if (i < j) a[i++] = a[j];
+            while(i < j && a[i] < pivot) i++;
+            if (i < j) a[j--] = a[i];
+        }
+        a[i] = pivot;
+        if (i - low + 1 == k) return pivot;
+        else if (i - low + 1 < k)
+        return find_kth_smathest(a, i + 1, high, k - (i - low + 1));
+        //第 k 小在右半部分， k 变为 k-(i-low+1)
+        // 因为左半部分元素个数为 (i-1)-low+1=i-low ,还有一个基准元素 pivot(a[i])
+        else return find_kth_smathest(a, low, i - 1, k);
+        //第 k 小在左半部分， k 不变
+    }
+    return a[low];
+    //当 low=high 时， k 必然也是 1 ，这使要查询的数组中就一个元素，直接返回就可以了
+}
+
+int main()
+{
+    printf("排序之前的数组：\n");
+    for (int i = 0; i < 8; i++) printf("%d ", a[i]);
+    printf("\n");
+    QuickSort(a, 0, 7);
+    printf("排序之后的数组：\n");
+    for (int i = 0; i < 8; i++) printf("%d ", a[i]);
+    printf("\n");
+    /*
+    for (int k = 1; k < 8; k++)
+    {
+        printf("第%d小的元素是%d\n", k, find_kth_smallest(a, 0, 7, k));
+        printf("查找之后的数组变为:\n");
+        for (int i = 0; i < 8; i++)
+            printf("%d ", a[i]);
+        printf("\n");
+    }
+    */
+    return 0;
+}
+\end{lstlisting}
+
+\section{矩阵快速幂}
+\begin{lstlisting}
+const int MAX_SIZE = 20;
+struct Matrix{
+    int row, col;
+    ll data[MAX_SIZE][MAX_SIZE];
+
+    Matrix operator * (const Matrix& rhs) const {
+    //矩阵相乘条件:col = rhs.row
+        Matrix res;
+        res.row = row, res.col = rhs.col;
+        for(int i = 1; i <= res.row; ++i) {
+            for(int j = 1; j <= res.col; ++j) {
+                res.data[i][j] = 0;
+                for(int k = 1; k <= row; ++k) {
+                    res.data[i][j] += data[i][k] * rhs.data[k][j] % mod;
+                    if (res.data[i][j] >= mod) res.data[i][j] -= mod;
+                }
+            }
+        }
+        return res;
+    }
+
+    Matrix operator ^ (const int m) const {  //矩阵快速幂
+        Matrix res, tmp;
+        res.row = row, res.col = col; //row == col
+        memset(res.data, 0, sizeof(res.data));
+
+        tmp.row = row, tmp.col = col;
+        memcpy(tmp.data, data, sizeof(data));
+        for(int i = 1; i <= res.row; ++i) { res.data[i][i] = 1; }
+        int mm = m;
+        while(mm) {
+            if(mm & 1) res = res * tmp;
+            tmp = tmp * tmp;
+            mm >>= 1;
+        }
+        return res;
+    }
+};
+\end{lstlisting}
+
+\subsection{循环矩阵}
+\underline{[UVA 1386 Cellular Automaton]} \\
+
+给一个$n\leq 500$个数组成的数环，每次取每个数左右范围$0\leq d< \frac{n}{2}$的所有数（包括本身和距离是$d$的数）相加和然后$\mod m$ 生成新的数，问操作$k\leq 10^7$次后的数环是怎样的？ \\
+
+将二维矩阵压缩为一维每次只保留第一行数字，通过手动模拟原始矩阵的乘法可以到这个式子： \\
+\begin{center}
+$A[j]*B[(j-i+n)\%n]$
+\end{center}
+其中下标都是从0开始到$n-1$。时间复杂度：$O(n^{2}*\log k)$
+\begin{lstlisting}
+const int MAX_N = 510;
+
+int n, mod, d, K;
+ll C[MAX_N], D[MAX_N], M[MAX_N], ret[MAX_N], ans[MAX_N];
+
+inline void mul(ll *arr1, ll *arr2) { // arr2 = arr1 * arr2
+    memset(ret, 0, sizeof (ret));
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            ret[i] += arr1[j] * arr2[(j - i + n) % n] % mod;
+            if (ret[i] >= mod) ret[i] -= mod;
+        }
+    }
+    memcpy(arr2, ret, sizeof (ret));
+}
+
+void Qpower() {
+    memset (M, 0, sizeof(M));
+    M[0] = 1;
+    while (K) {
+        if (K & 1) mul(C, M);
+        mul(C, C);
+        K >>= 1;
+    }
+}
+
+int main() {
+    while (~scanf("%d%d%d%d", &n, &mod, &d, &K)){
+        for (int i = 0; i < n; i++) {
+            ll x;
+            scanf("%lld", &x);
+            D[i] = x % mod;
+        }
+        memset (C, 0, sizeof (C));
+        for (int i = 0; i < 2 * d + 1; i++) {
+            C[(n - d + i) % n] = 1;
+        }
+        Qpower();
+        memset (ans, 0, sizeof (ans));
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                int ind = (j - i + n) % n;
+                ans[i] += D[j] * M[(j - i + n) % n] % mod;
+                if (ans[i] >= mod) ans[i] -= mod;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (i) printf(" ");
+            printf("%lld", ans[i]);
+        }
+        printf("\n");
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\section{高精度}
+
+因为计算大数除法时需要用到乘法和减法，但是不指定字符串长度的乘法和减法不容易用字符数组表示，所以这里就没写用字符数组计算的大数除法。
+\begin{lstlisting}
+/***********大数加减乘/仅限正整数***************/
+//加法测试：HDU 1002
+//减法测试：百练OJ 2736
+//乘法测试：百练OJ 2980
+
+const int MAX_N = 100010;
+
+char a[MAX_N], b[MAX_N], ope[10], ans[MAX_N];
+int data[MAX_N];
+
+void Big_Plus()
+{
+    int lena = strlen(a), lenb = strlen(b);
+    if(lena >= lenb){ //a 位数比 b 多
+        for(int i = lenb; i >= 0; i--) //遍历 b 中所有元素
+            b[i + (lena - lenb)] = b[i];//数字后移，使末位与 a 对其
+        for(int i = 0; i < lena - lenb; i++)//将数字 b 中高位上多出来的部分遍历赋0
+            b[i] = '0';
+    } else {
+        for (int i = lena; i >= 0; i--)
+            a[i + (lenb - lena)] = a[i];
+        for (int i = 0; i < lenb - lena; i++)
+            a[i] = '0';
+    }
+    int carry = 0, lenans = max(lena, lenb);
+    ans[lenans] = '\0';//添加结束符
+    int tmp = lenans - 1;
+    while (tmp >= 0) {//循环条件； a 和 b 对应位上数字加完
+        int x = a[tmp] - '0';
+        int y = b[tmp] - '0';
+        int z = x + y + carry;
+        if(z >= 10) carry = z / 10;
+        else carry = 0;
+        z %= 10;
+        ans[tmp] = z + '0';
+        tmp--;
+    }
+    if(carry) {//最高位计算完仍有进位
+        for (int i = lenans; i >= 0; i--) //lenans 是考虑到结束符
+            ans[i+1] = ans[i];    //后移
+        ans[0] = carry + '0';  //最高位为carry
+    }
+}
+
+void Big_Sub()
+{
+    int lena = strlen(a);// ca 为 a 的长度
+    int lenb = strlen(b);// cb 为 b 的长度
+    if (lena > lenb || lena == lenb && strcmp(a, b) >= 0){
+    // a 的长度大于 b 或 a 的长度等于 b 且字符串 a>=b  ,结果为正
+        int i, j;
+        for(i = lena - 1, j = lenb - 1; j >= 0; i--, j--)
+            a[i] -= (b[j] - '0');
+        for(i = lena-1; i >= 0; i--) {   //遍历 a 的所有下标
+            if (a[i] < '0'){  //如果当前下标对应值小于 0 ，则借位操作
+                a[i] += 10;  //当前值加10
+                a[i-1]--;  //高位减1
+            }
+        }
+        i = 0;
+        //去除前导0
+        while (a[i] == '0' & &i < lena - 1) i++;
+        strcpy(ans, a + i);//将结果复制到 ans 数组
+    } else {//类似上面部分
+        int i, j;
+        for (i = lena - 1, j = lenb - 1; i >= 0; i--, j--)
+            b[j] -= (a[i] - '0');
+        for( j = lenb - 1; j >= 0; j--){
+            if(b[j] < '0'){
+                b[j] += 10;
+                b[j - 1]--;
+            }
+        }
+        j = 0;
+        while(b[j] == '0' && j < lenb - 1) j++;
+        ans[0] = '-';//运算结果为负
+        strcpy(ans + 1, b + j);
+    }
+}
+
+void Big_Mul()
+{
+    int lena = strlen(a), lenb = strlen(b);
+    int lenans = lena + lenb - 1;
+    for(int i = 0; i <= (lena - 1) / 2; i++) swap(a[i], a[lena - 1 - i]); //数组逆置
+    for(int i = 0; i <= (lenb-1)/2;i++) swap(b[i],b[lenb-1-i]);
+    memset(data,0,sizeof(data));
+    for(int i=0;i<lena;i++){
+        for(int j=0;j<lenb;j++)
+            data[i+j]+=(a[i]-'0')*(b[j]-'0');  //模拟乘法,计算每一位
+    }
+    int carry=0;
+    for(int i=0;i<lenans;i++){
+        int tmp=data[i]+carry;
+        carry=tmp/10;
+        data[i]=tmp%10;
+    }
+    while(carry){
+        data[lenans++]=carry%10;
+        carry/=10;
+    }
+    while(data[lenans-1]==0&&lenans>1) lenans--;
+    for(int i=0;i<=lenans-1;i++) ans[i]=data[lenans-1-i]+'0';
+    ans[lenans]='\0';  //添加结束符
+}
+
+int main()
+{
+    //freopen("BigIntin.txt","r",stdin);
+    //输入:运算数和运算符之间有空格
+    while(~scanf("%s%s%s",a,ope,b))
+    {
+        printf("%s%s%s=",a,ope,b);
+        if(ope[0]=='+'){
+            Big_Plus();
+        }else if(ope[0]=='-'){
+            Big_Sub();
+        }else if(ope[0]=='*'){
+            Big_Mul();
+        }
+        puts(ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+/********大数加减乘除C++string类实现**********/
+//运算数仅限正整数
+
+//加法测试：HDU 1002
+//减法测试：百练OJ 2736
+//乘法测试：百练OJ 2980
+//除法测试：百练OJ 2737
+
+//string 比较函数:相等返回 0 ， str1>str2 返回 1 ， str1<str2 返回-1
+int Compare(string str1,string str2)
+{
+    if(str1.length() > str2.length()) return 1;
+    else if(str1.length() < str2.length()) return -1;
+    else return str1.compare(str2);
+}
+
+string Big_Plus(string str1,string str2)
+{
+    string ans;
+    int len1=str1.length();
+    int len2=str2.length();
+    //将长度较小的前面补 0 ，使两个 string 长度相同
+    if(len1<len2){
+        for(int i=1;i<=len2-len1;i++){
+            str1="0"+str1;
+        }
+    }else {
+        for(int i=1;i<=len1-len2;i++){
+            str2="0"+str2;
+        }
+    }
+    int len=max(len1,len2);
+    int carry=0;
+    for(int i=len-1;i>=0;i--){
+        int tmp=str1[i]-'0'+str2[i]-'0'+carry;
+        carry=tmp/10;
+        tmp%=10;
+        ans=char(tmp+'0')+ans;
+    }
+    if(carry) ans=char(carry+'0')+ans;
+    return ans;
+}
+
+//支持大数减小数
+string Big_Sub(string str1,string str2)
+{
+    string ans;
+    int carry=0;
+    int difference=str1.length()-str2.length();//长度差
+    for(int i=str2.length()-1;i>=0;i--){
+        if(str1[difference+i]<str2[i]+carry){
+            ans=char(str1[difference+i]+10-str2[i]-carry+'0')+ans;
+            carry=1;
+        }else {
+            ans=char(str1[difference+i]-str2[i]-carry+'0')+ans;
+            carry=0;
+        }
+    }
+    for(int i=difference-1;i>=0;i--){
+        if(str1[i]-carry>='0'){
+            ans=char(str1[i]-carry)+ans;
+            carry=0;
+        }else {
+            ans=char(str1[i]-carry+10)+ans;
+            carry=1;
+        }
+    }
+    //去除前导0
+    ans.erase(0,ans.find_first_not_of('0'));
+    if(ans.empty()) ans="0";
+    return ans;
+}
+
+string Big_Mul(string str1,string str2)
+{
+    string ans;
+    int len1=str1.length();
+    int len2=str2.length();
+    for(int i=len2-1;i>=0;i--){
+        string tmpstr="";
+        int data=str2[i]-'0';
+        int carry=0;
+        if(data!=0){
+            for(int j=1;j<=len2-1-i;j++){
+                tmpstr+="0";
+            }
+            for(int j=len1-1;j>=0;j--){
+                int t=data*(str1[j]-'0')+carry;
+                carry=t/10;
+                t%=10;
+                tmpstr=char(t+'0')+tmpstr;
+            }
+            if(carry!=0) tmpstr=char(carry+'0')+tmpstr;
+        }
+        ans=Big_Plus(ans,tmpstr);
+    }
+    ans.erase(0,ans.find_first_not_of('0'));
+    if(ans.empty()) ans="0";
+    return ans;
+}
+
+//正数相除，商为 quotient ,余数为 residue
+
+void Big_Div(string str1,string str2,string& quotient,string& residue)
+{
+    quotient=residue="";//商和余数清空
+    if(str2=="0"){//；判断除数是否为0
+        quotient=residue="ERROR";
+        return;
+    }
+    if(str1=="0"){//判断被除数是否为0
+        quotient=residue="0";
+        return;
+    }
+    int res=Compare(str1,str2);
+    if(res<0){//被除数小于除数
+        quotient="0";
+        residue=str1;
+        return;
+    }else if(res==0){
+        quotient="1";
+        residue="0";
+        return ;
+    }else {
+        int len1=str1.length();
+        int len2=str2.length();
+        string tmpstr;
+        tmpstr.append(str1,0,len2-1);//将 str1 的前 len2 位赋给tmpstr
+        for(int i=len2-1;i<len1;i++){
+            tmpstr=tmpstr+str1[i];//被除数新补充一位
+            tmpstr.erase(0,tmpstr.find_first_not_of('0'));//去除前导0
+            if(tmpstr.empty()) tmpstr="0";
+            for(char ch='9';ch>='0';ch--){//试商
+                string tmp,ans;
+                tmp=tmp+ch;
+                ans=Big_Mul(str2,tmp);//计算乘积
+                if(Compare(ans,tmpstr)<=0){//试商成功
+                    quotient=quotient+ch;
+                    tmpstr=Big_Sub(tmpstr,ans);//减掉乘积
+                    break;
+                }
+            }
+        }
+        residue=tmpstr;
+    }
+    quotient.erase(0,quotient.find_first_not_of('0'));
+    if(quotient.empty()) quotient="0";
+}
+
+int main()
+{
+    //freopen("BigIntin.txt","r",stdin);
+    string str1,str2,str3,str4;
+    while(cin>>str1>>str2){
+        cout<<Big_Plus(str1,str2)<<endl;
+        cout<<Big_Sub(str1,str2)<<endl;
+        cout<<Big_Mul(str1,str2)<<endl;
+        Big_Div(str1,str2,str3,str4);
+        cout<< "商:" <<str3<<" " << "余数:" <<str4<<endl;
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+const int SIZE = 11000;
+
+struct BigInteger {
+    int len, s[SIZE + 5];
+
+    BigInteger () {
+        memset(s, 0, sizeof(s));
+        len = 1;
+    }
+    BigInteger operator = (const char *num) { //字符串赋值
+        memset(s, 0, sizeof(s));
+        len = strlen(num);
+        for(int i = 0; i < len; i++) s[i] = num[len - i - 1] - '0';
+        return *this;
+    }
+    BigInteger operator = (const int num) { //int 赋值
+        memset(s, 0, sizeof(s));
+        char ss[SIZE + 5];
+        sprintf(ss, "%d", num);
+        *this = ss;
+        return *this;
+    }
+    BigInteger (int num) {
+        *this = num;
+    }
+    BigInteger (char* num) {
+        *this = num;
+    }
+    string str() const { //转化成 string
+        string res = "";
+        for(int i = 0; i < len; i++) res = (char)(s[i] + '0') + res;
+        if(res == "") res = "0";
+        return res;
+    }
+    BigInteger clean() {
+        while(len > 1 && !s[len - 1]) len--;
+        return *this;
+    }
+
+    BigInteger operator + (const BigInteger& b) const {
+        BigInteger c;
+        c.len = 0;
+        for(int i = 0, g = 0; g || i < max(len, b.len); i++) {
+            int x = g;
+            if(i < len) x += s[i];
+            if(i < b.len) x += b.s[i];
+            c.s[c.len++] = x % 10;
+            g = x / 10;
+        }
+        return c.clean();
+    }
+
+    BigInteger operator - (const BigInteger& b) {
+        BigInteger c;
+        c.len = 0;
+        for(int i = 0, g = 0; i < len; i++) {
+            int x = s[i] - g;
+            if(i < b.len) x -= b.s[i];
+            if(x >= 0) g = 0;
+            else {
+                g = 1;
+                x += 10;
+            }
+            c.s[c.len++] = x;
+        }
+        return c.clean();
+    }
+
+    BigInteger operator * (const int num) const {
+        int c = 0, t;
+        BigInteger pro;
+        for(int i = 0; i < len; ++i) {
+            t = s[i] * num + c;
+            pro.s[i] = t % 10;
+            c = t / 10;
+        }
+        pro.len = len;
+        while(c != 0) {
+            pro.s[pro.len++] = c % 10;
+            c /= 10;
+        }
+        return pro.clean();
+    }
+
+    BigInteger operator * (const BigInteger& b) const {
+        BigInteger c;
+        for(int i = 0; i < len; i++) {
+            for(int j = 0; j < b.len; j++) {
+                c.s[i + j] += s[i] * b.s[j];
+                c.s[i + j + 1] += c.s[i + j] / 10;
+                c.s[i + j] %= 10;
+            }
+        }
+        c.len = len + b.len + 1;
+        return c.clean();
+    }
+
+    BigInteger operator / (const BigInteger &b) const {
+        BigInteger c, f;
+        for(int i = len - 1; i >= 0; --i) {
+            f = f * 10;
+            f.s[0] = s[i];
+            while(f >= b) {
+                f = f - b;
+                ++c.s[i];
+            }
+        }
+        c.len = len;
+        return c.clean();
+    }
+    //高精度取模
+    BigInteger operator % (const BigInteger &b) const{
+        BigInteger r;
+           for(int i = len - 1; i >= 0; --i) {
+               r = r * 10;
+               r.s[0] = s[i];
+               while(r >= b) r = r - b;
+           }
+           r.len = len;
+           return r.clean();
+    }
+
+    bool operator < (const BigInteger& b) const {
+        if(len != b.len) return len < b.len;
+        for(int i = len - 1; i >= 0; i--)
+            if(s[i] != b.s[i]) return s[i] < b.s[i];
+        return false;
+    }
+    bool operator > (const BigInteger& b) const {
+        return b < *this;
+    }
+    bool operator <= (const BigInteger& b) const {
+        return !(b < *this);
+    }
+    bool operator == (const BigInteger& b) const {
+        return !(b < *this) && !(*this < b);
+    }
+    bool operator != (const BigInteger &b) const {
+        return !(*this == b);
+    }
+    bool operator >= (const BigInteger &b) const {
+        return *this > b || *this == b;
+    }
+    friend istream & operator >> (istream &in, BigInteger& x) {
+        string s;
+        in >> s;
+        x = s.c_str();
+        return in;
+    }
+    friend ostream & operator << (ostream &out, const BigInteger& x) {
+        out << x.str();
+        return out;
+    }
+};
+\end{lstlisting}
+\subsection{利用FFT实现大数乘法}
+\begin{lstlisting}
+int main() {
+	while (~scanf("%s%s", sa, sb)) {
+		int lena = strlen(sa), lenb = strlen(sb);
+		int ka = 0, kb = 0;
+		init(max(lena, lenb) * 2 + 1);
+		for (int i = 0; i < N; ++i) A1[i] = A2[i] = CP(0, 0);
+		for (int i = 0; i < lena; ++i) A1[lena - 1 - i].a = sa[i] - '0';
+		for (int i = 0; i < lenb; ++i) A2[lenb - 1 - i].a = sb[i] - '0';
+		
+		FFT(A1, N, 1); FFT(A2, N, 1);
+		for (int i = 0; i < N; ++i) A1[i] = A1[i] * A2[i];
+		FFT(A1, N, -1);
+		for (int i = 0; i < N; ++i) {
+			ans[i] = (int)(A1[i].a + 0.5);
+		}
+		int carry = 0;
+		for (int i = 0; i < N; ++i) {
+			int t = ans[i] + carry;
+			ans[i] = t % 10;
+			carry = t / 10;
+		}
+		while (carry) {
+			ans[N++] = carry % 10;
+			carry /= 10;
+		}
+		while (N > 1 && ans[N - 1] == 0) N--;
+		for (int i = N - 1; i >= 0; --i) {
+			printf("%c", ans[i] + '0');
+		}
+		printf("\n");
+	}
+	return 0;
+}
+\end{lstlisting}
+
+%\end{document}

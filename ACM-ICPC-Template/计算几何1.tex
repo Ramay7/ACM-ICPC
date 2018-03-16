@@ -1,0 +1,748 @@
+%\input{style}
+%\begin{document}
+\chapter{计算几何}
+
+\section{简单}
+
+\subsection{定义}
+\begin{lstlisting}
+//判断浮点数x的符号
+int sgn(double x)
+{
+    if(fabs(x) < eps) return 0;
+    else if(x < 0) return -1;
+    else return 1;
+}
+
+struct Point { 点的定义：
+    double x, y;
+
+    Point() {}
+    Point(double _x, double _y) : x(_x), y(_y) {}
+    bool operator == (const Point& rhs) const {
+        return sgn(x - rhs.x) == 0 && sgn(y - rhs.y) == 0;
+    }
+    bool operator < (const Point& rhs) const {
+        return sgn(x - rhs.x) == 0 ? sgn(y - rhs.y) < 0 : x < rhs.x;
+    }
+    Point operator - (const Point& rhs) const {
+        return Point(x - rhs.x, y - rhs.y);
+    }
+    Point operator + (const Point& rhs) const {
+        return Point(x + rhs.x, y + rhs.y);
+    }
+    Point operator * (const double d) const {
+        return Point(x * d, y * d);
+    }
+    Point operator / (const double d) const {
+        return Point(x / d, y / d);
+    }
+    double dot(const Point& rhs) const { //点积
+        return x * rhs.x + y * rhs.y;
+    }
+    double cross(const Point& rhs) const { //叉积
+        return x * rhs.y - y * rhs.x;
+    }
+    double dis(const Point& rhs) const { //两点距离
+        return hypot(x - rhs.x, y - rhs.y);
+    }
+    double len() const { //长度
+        return hypot(x, y);
+    }
+    //计算 pa 和 pb 的夹角，即从这个点看 a,b 所成的夹角,返回弧度值,且是正值
+    double rad(const Point& a, const Point& b) const {
+        Point p = *this;
+        return fabs(atan2(fabs((a - p).cross(b - p)), (a - p).dot(b - p)));
+    }
+    Point to_vector(double r) const { //返回长度为 r 的向量
+        double l = len();
+        if(!sgn(l)) return *this;
+        r /= l;
+        return Point(x * r, y * r);
+    }
+    Point rotleft(){ //逆时针旋转 90 度
+        return Point(-y, x);
+    }
+    Point rotright(){ //顺时针旋转 90 度
+        return Point(y, -x);
+    }
+    Point rotate(const Point& rhs, const double angle){ //绕着 rhs 点逆时针旋转 angle 度
+        Point v = (*this) - rhs;
+        double c = cos(angle), s = sin(angle);
+        return Point(rhs.x + v.x * c - v.y * s, rhs.y + v.x * s + v.y * c);
+    }
+};
+\end{lstlisting}
+
+\begin{lstlisting}
+struct Line{ 线段的定义：
+    Point s, e;
+
+    Line() {}
+    Line(const Point& _s, const Point& _e) : s(_s), e(_e) {}
+    bool operator == (const Line& rhs) const {
+        return s == rhs.s && e == rhs.e;
+    }
+    //根据一个点和倾斜角 angle 确定直线,0<= angle < pi
+    Line(const Point& rhs, const double angle) const {
+        s = p;
+        if(sgn(angle - pi / 2) == 0){ //竖直直线
+            e = (s + Point(0, 1));
+        }else {
+            e = (s + Point(1, tan(angle)));
+        }
+    }
+    double length() const{ //线段长度
+        return s.dis(e);
+    }
+    double angle(){ //返回直线的倾斜角0<= angle < pi
+        double k = atan2(e.y - s.y, e.x - s.x);
+        if(sgn(k) < 0) k += pi;
+        if(sgn(k - pi) == 0) k -= pi;
+        return k;
+    }
+    //点和直线的关系： 1 在左侧, 2 在右侧， 3 在直线上
+    int relation(const Point& rhs) const{
+        int c = sgn((rhs - s).cross(e - s));
+        if(c < 0) return 1;
+        else if(c > 0) return 2;
+        else return 3;
+    }
+    bool point_on_seg(const Point& rhs) const { //点在线段上的判断
+        return sgn((rhs - s).cross(e - s)) == 0 && sgn((rhs - s).dot(rhs - e)) <= 0;
+    }
+    bool parallel(const Line v) const { //判断直线平行
+        return sgn((e - s).cross(v.e - v.s)) == 0;
+    }
+    double point_to_line_dis(const Point& rhs) const{ //点到直线的距离
+        return fabs((rhs - s).cross(e - s)) / length();
+    }
+    double point_to_seg_dis(const Point& rhs) const { //点到线段的距离
+        if(sgn((rhs - s).dot(e - s)) < 0 || sgn((rhs - e).dot(s - e)) < 0){
+            return min(rhs.dis(s), rhs.dis(e));
+        }else return point_to_line_dis(rhs);
+    }
+};
+\end{lstlisting}
+
+\subsection{顺时针输出所有顶点}
+
+\underline{将平面所有点都用上，构成一个多边形，顺时针(或逆时针)输出点的顺序。} \\
+多边形有可能是凸的也有可能是凹的。 先找到最左下角的点(x值优先),然后对其余点以最左下角为基点极角排序。除去最左侧的一系列和$point[0]$共线的点，其余的点的顺序即是逆时针的点的顺序。
+\begin{lstlisting}
+const int MAX_N=2010;
+const double eps=1e-10;
+
+int T,n;
+int ans[MAX_N];
+
+Point point[MAX_N];
+
+inline bool cmp(Point a,Point b)
+{//按照最左下角极角排序
+    double res = (a - point[0]).cross(b - point[0]);
+    if(res != 0.0) return res > 0;//res > 0 说明 b 在左侧，此时 a 的极角较小
+    else return a.dis(point[0]) < b.dis(point[0]); //共线时按照距离从小到大排序
+}
+
+inline void solve()
+{
+    //找到最左下角顶点,优先 x 最小，其次 y 最小
+    int k=0;
+    for(int i=0;i<n;i++){
+        if(point[i].x<point[k].x||(point[i].x==point[k].x&&point[i].y<point[k].y)){
+            k=i;
+        }
+    }
+    swap(point[0],point[k]);
+    sort(point+1,point+n,cmp); //排序从下标 1 开始，因为 point[0] 就是起点
+    int end=n-2;
+    //找到最后的顶点 end ,使得 point[end],point[end+1] 和 point[0] 不共线
+    while(end>0){
+        double res=(point[end]-point[0]).cross(point[end+1]-point[0]);
+        if(res!=0.0) break;
+        end--;
+    }
+    //从 point[end+1] 到 point[n-1] 都是和 point[0] 共线的点
+    //即 point[end+1]..point[n-1],point[0] 都在一条直线上
+    //因为极角排序时是按照到 point[0] 距离从小到大排序，
+    //所以这些点的逆时针顶点应该是按照距离从大到小考虑
+    //point[end+1] 实际上应该是第 n-1 个点, point[n-1] 实际上应该时第 end+1 个点
+    for(int i=end+1;i<n;i++){
+        ans[i]=point[n+end-i].index;
+    }
+    for(int i=0;i<=end;i++){
+        ans[i]=point[i].index;
+    }
+    for(int i=0;i<n;i++){
+        printf("%d%c",ans[i],i==n-1?'\n':' ');
+    }
+}
+
+int main()
+{
+    scanf("%d",&T);
+    while(T--){
+        scanf("%d",&n);
+        for(int i=0;i<n;i++){
+            scanf("%lf%lf",&point[i].x,&point[i].y);
+            point[i].index=i;
+        }
+        solve();
+    }
+    return 0;
+}
+\end{lstlisting}
+\subsection{求半径R圆覆盖最多点数及由圆上两点和半径求圆心}
+方法1： \\
+最优的情况一定是有两个点在圆弧上。先枚举两个点，计算两点在圆弧上的单位圆（一般会有两个）。但是可以统一取一个方向的（也就是$AB$取一个然后$BA$取另外一个）.然后枚举所有点,计算在这个单位圆内的点的个数。 这样做的时间复杂度是$O(n^3)$. 、\\
+方法2： \\
+对每个点以$R$为半径画圆，对$N$个圆两两求交。这一步$O(N^2)$。问题转化为求被覆盖次数最多的弧。 因为如果最优圆覆盖$A$点那么最优圆一定在以$A$点为圆心的圆弧上。那么圆弧倍覆盖多少次也就意味着以这条圆弧为上任意一点为圆心花园能覆盖多少点。 对每一个圆，求其上的每段弧重叠次数。\\
+假如$A$圆与$B$圆相交。$A$上$[PI/3, PI/2]$的区间被$B$覆盖($PI$为圆周率)。 那么对于$A$圆，我们在$PI/3$处做一个+1标记，在$PI/2$处做一个-1 标记。 \\
+对于$[PI*5/3, PI*7/3]$这样横跨0点的区间只要在0点处拆成两段即可。 将一个圆上的所有标记排序，从头开始扫描。初始$total=0$，碰到+1标记给$total++$，碰到-1标记$total–-$。 扫描过程中$total$的最大值就是圆上被覆盖最多的弧。求所有圆的$total$的最大值就是答案。 极角排序需要$2*n*\log n$，总复杂度$O(N^2 * \log N)$
+\begin{lstlisting}
+const int MAX_N=310;
+const double eps=1e-6;
+const double R=1.0;//定义覆盖圆半径为R
+
+int T,n;
+
+struct Point{
+    double x,y;
+}point[MAX_N];
+
+inline double dis(Point a,Point b)
+{
+    return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+
+inline Point GetCenter(Point a,Point b)
+{//获取 a,b 两点在圆周上的单元圆圆心,单位圆圆心有两个
+    struct Point mid,res;
+    mid.x=(a.x+b.x)/2,mid.y=(a.y+b.y)/2; //mid 是 a,b 中点坐标
+    double angle=atan2(b.y-a.y,b.x-a.x);//angle 是直线 ab 的倾斜角
+    double tmp=dis(a,b)/2;//tmp 是线段 ab 长度的一半
+    double d=sqrt(1.0-tmp*tmp);//d 是 ab 中点到圆心的距离
+    res.x=mid.x-d*sin(angle);//res 是直线 ab 左边的那个圆心
+    res.y=mid.y+d*cos(angle);
+    //下面的 res 是直线 ab 右边的那个圆心
+    //res.x=mid.x+d*sin(angle);
+    //res.y=mid.y-d*cos(angle);
+    return res;
+}
+
+int main()
+{
+    scanf("%d",&T);
+    while(T--){
+        scanf("%d",&n);
+        for(int i=0;i<n;i++){
+            scanf("%lf%lf",&point[i].x,&point[i].y);
+        }
+        int ans=1;//初始化至少能覆盖一个点！！！
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+                if(i==j||dis(point[i],point[j])-2*R>eps) continue;
+                int cnt=0;
+                struct Point center=GetCenter(point[i],point[j]);
+                for(int k=0;k<n;k++){
+                    if(dis(point[k],center)-R<=eps) cnt++;
+                }
+                ans=max(ans,cnt);
+            }
+        }
+        printf("%d\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+\begin{lstlisting}
+const int MAX_N=310;
+const double PI=acos(-1.0);
+const double R=1.0;//定义覆盖圆半径为R
+
+int T,n,total;
+
+struct Point{
+    double x,y;
+}point[MAX_N];
+
+struct Angle{
+    double data;
+    int is;
+    bool operator < (const Angle& rhs) const {
+        return data<rhs.data;
+    }
+}angle[MAX_N*2];
+
+inline double Dis(Point a,Point b)//计算线段 ab 的长度
+{
+    return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+
+inline double God(Point a,Point b)//计算向量 ab 的极角
+{
+    double res=atan(fabs((b.y-a.y)/(b.x-a.x)));
+    if(b.y<a.y){
+        if(b.x<a.x) res+=PI;
+        else res=2*PI-res;
+    }else {
+        if(b.x<a.x) res=PI-res;
+    }
+    return res;
+}
+
+void solve()
+{
+    int res=1;
+    for(int i=0;i<n;i++){
+        total=0;
+        for(int j=0;j<n;j++){
+            if(i==j) continue;
+            double dist=Dis(point[i],point[j]);
+            if(dist>2*R) continue;
+            double base=God(point[i],point[j]);
+            double extra=acos(dist/2.0); //计算差角
+            angle[total].data=base+extra;
+            angle[total++].is=-1;
+            angle[total].data=base-extra;
+            angle[total++].is=1;
+        }
+        if(total<=res) continue;
+        sort(angle,angle+total);
+        int tmp=1;
+        for(int j=0;j<total;j++){
+            tmp+=angle[j].is;
+            res=max(res,tmp);
+        }
+    }
+    printf("%d\n",res);
+}
+
+int main()
+{
+    scanf("%d",&T);
+    while(T--){
+        scanf("%d",&n);
+        for(int i=0;i<n;i++){
+            scanf("%lf%lf",&point[i].x,&point[i].y);
+        }
+        solve();
+    }
+    return 0;
+}
+\end{lstlisting}
+\subsection{计算两圆公共部分面积}
+处理两圆相交情况 \\
+分析交点及两圆圆心组成的四边形和交点与两圆圆心组成的两个扇形\\
+假设 $c1$ 圆扇形角为 $2*\alpha$ ，那么四边形的面积$s$等于：$0.5*dis*c1.r*sin(\alpha)*2=dis*c1.r*sin(\alpha);$ \\
+记 $c1,c2 $扇形面积分别为 $s1,s2 $.那么$s1=(2*\alpha/(2*PI))*PI*c1.r*c1.r=\alpha*c1.r*c1.r;$ \\
+而且$\alpha$可以用余弦定理计算出来:$cos(\alpha)=(d^2+c1.r^2-c2.r^2)/(2*d*c1.r);$ \\
+同理也可以计算出$s2$ ,所以相交部分面积为:$s1+s2-s$.
+
+\begin{lstlisting}
+const double eps=1e-8;
+const double PI=acos(-1.0);
+
+struct Circle{
+    double x,y,r;
+};
+
+double GetDis(Circle c1,Circle c2)//计算圆心距
+{
+    return sqrt((c1.x-c2.x)*(c1.x-c2.x)+(c1.y-c2.y)*(c1.y-c2.y));
+}
+
+double CalcArea(Circle c1,Circle c2)
+{
+    double dis=GetDis(c1,c2);
+    if(dis-(c1.r+c2.r)>=eps){ //两圆相离
+        return 0;
+    }else if(c1.r>=c2.r+dis){  //c1 包含c2
+        return PI*c2.r*c2.r;
+    }else if(c2.r>=c1.r+dis){ //c2 包含c1
+        return PI*c1.r*c1.r;
+    }
+    double angle1=acos((dis*dis+c1.r*c1.r-c2.r*c2.r)/(2*dis*c1.r));
+    double s1=angle1*c1.r*c1.r;    //c1 圆扇形面积
+
+    double s=dis*c1.r*sin(angle1);  //四边形面积
+
+    double angle2=acos((dis*dis+c2.r*c2.r-c1.r*c1.r)/(2*dis*c2.r)); //c2 圆扇形面积
+    double s2=angle2*c2.r*c2.r;
+
+    return s1+s2-s;
+}
+
+int main()
+{
+    Circle a,b;
+    while(cin>>a.x>>a.y>>a.r>>b.x>>b.y>>b.r){
+        double ans=CalcArea(a,b);
+        printf("%.3lf\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{判断两线段是否相交}
+
+\underline {已知n条木棍的起点和终点坐标，问第i条木棍和第j条木棍是否相连？} \\
+\underline{当两条木棍之间有公共点时，就认为他们时相连的。\\ 通过相连的木棍间接的连在一起的两根木棍也认为时相连的。} \\
+
+木棍就是二维平面上的线段，只要能判断线段是否相交，那么建图后可以通过Floyd算法或者并查集进行连接性判断。 如何判断两条线段是否相交呢？首先会想到计算两条直线的交点，然后判断交点是否在线段上。那么两条直线的交点如何求得呢？虽然可以把直线表示成方程，通过建立方程组求解。但在几何问题中，运用向量的内积和外积进行计算是非常方便的。对于二维向量$p1=(x1,y1)$和$p2=(x2,y2)$,我们定义内积$p1·p2=x1*x2+y1*y2$，外积$p1 * p2=x1*y2-x2*y1$. 要判断点$q$是否在线段$p1-p2$上，只要先利用外积根据是否有$(p1-q)X(p2-q)==0$来判断点$q$是否在直线$p1-p2$上，再利用内积根据是否有$(p1-q)·(p2-q)<=0$来判断点$q$是否落在$p1-p2$之间。而要求两直线的交点，通过变量$t$将直线$p1-p2$上的点表示为$p1+t(p2-p1)$，交点又在直线$q1-q2$上，所以有: $(q2-q1)X(p1+(p2-p1)-q1)==0$ 于是可以利用下式求得$t$的值:$$p1+(p2-p1)*((q2-q1)X(q1-p1)/(q2-q1)X(p2-p1))$$
+但是使用这个方法还要注意边界情况。也就是平行的线段也可能有公共点。这时我们可以选择通过检查端点是否在另一条线段上来判断。
+\begin{lstlisting}
+double EPS=1e-10;
+const int MAX_N=20;
+
+int n;
+bool connected[MAX_N][MAX_N];
+int pre[MAX_N];
+
+//考虑误差的加法运算
+double add(double a,double b)
+{
+    if(abs(a+b)<EPS*(abs(a)+abs(b))) return 0;
+    return a+b;
+}
+
+struct Point st[MAX_N],ed[MAX_N];//st[i],ed[i] 分别是第 i 条线段的起点和终点
+
+//判断点 q 是否在线段 p1-p2 上
+bool on_seg(Point p1,Point p2,Point q)
+{
+    return (p1-q).cross(p2-q)==0&&(p1-q).dot(p2-q)<=0;
+}
+
+//计算直线 p1-p2 与直线 q1-q2 的交点
+Point intersection(Point p1,Point p2,Point q1,Point q2)
+{
+    return p1+(p2-p1)*((q2-q1).cross(q1-p1)/(q2-q1).cross(p2-p1));
+}
+
+//Floyd_Warshall 算法判断任意两条木棍是否相连
+void Floyd_Warshall()
+{
+    for(int k=0;k<n;k++){
+        for(int i=0;i<n;i++){
+            for(int j=0;j<n;j++){
+                connected[i][j] |= connected[i][k]&&connected[k][j];
+            }
+        }
+    }
+}
+
+int find(int x)
+{
+    return pre[x]==x?x:pre[x]=find(pre[x]);
+}
+
+//并查集判断任意两条木棍是否相连
+void UnionFindSet()
+{
+    for(int i=0;i<n;i++) pre[i]=i;
+    for(int i=0;i<n;i++){
+        for(int j=i+1;j<n;j++){
+            if(connected[i][j]&&find(i)!=find(j)){
+                pre[j]=i;
+            }
+        }
+    }
+}
+
+void solve()
+{
+    for(int i=0;i<n;i++){
+        connected[i][i]=true;
+        for(int j=0;j<i;j++){//判断木棍 i 和 j 是否有公共点
+            if((st[i]-ed[i]).cross(st[j]-ed[j])==0){//木棍平行时
+                connected[i][j]=connected[j][i]=on_seg(st[i],ed[i],st[j])
+                                            || on_seg(st[i],ed[i],ed[j])
+                                            || on_seg(st[j],ed[j],st[i])
+                                            || on_seg(st[j],ed[j],ed[i]);
+            } else {// 不平行时
+                Point inter=intersection(st[i],ed[i],st[j],ed[j]);
+                connected[i][j]=connected[j][i] =
+                    on_seg(st[i],ed[i],inter) && on_seg(st[j],ed[j],inter);
+            }
+        }
+    }
+    Floyd_Warshall();
+    UnionFindSet();
+}
+
+int main()
+{
+    while(~scanf("%d",&n)&&n){
+        for(int i=0;i<n;i++){
+            scanf("%lf%lf%lf%lf",&st[i].x,&st[i].y,&ed[i].x,&ed[i].y);
+        }
+        solve();
+        int a,b;
+        while(~scanf("%d%d",&a,&b)&&(a||b)){
+            //if(connected[a-1][b-1]) printf("CONNECTED\n");
+            if(find(a-1)==find(b-1)) printf("CONNECTED\n");
+            else printf("NOT CONNECTED\n");
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{判断点和多边形的关系}
+判断多边形和点的关系: 3点在顶点上,2在边上,1在内部,0在外部
+\begin{lstlisting}
+Point vertex[MAX_N]; //用来存储多边形的顶点
+Lint line[MAX_N]; //用来存储多边形的边
+int relation_with_point(Point q, int n)
+{
+    for(int i = 0; i < n; i++){
+        if(q == vertex[i]) return 3;
+    }
+    vertex[n] = vertex[0];
+    for(int i = 0; i < n; ++i){
+        line[i] = Line(vertex[i], vertex[i + 1]);
+    }
+    for(int i = 0; i < n; i++){
+        if(line[i].point_on_seg(q)) return 2;
+    }
+    int cnt = 0;
+    for(int i = 0; i < n; i++){
+        int j = i + 1;
+        int k = sgn((q - vertex[j]).cross(vertex[i] - vertex[j]));
+        int u = sgn(vertex[i].y - q.y);
+        int v = sgn(vertex[j].y - q.y);
+        if(k > 0 && u < 0 && v >= 0) cnt++;
+        if(k < 0 && v < 0 && u >= 0) cnt--;
+    }
+    return cnt != 0;
+}
+
+//点 p 在多边形顶点、边上、内部返回 true ，否则返回false
+bool in_polygon(Point p)
+{
+  int i, j, c = 0;
+  double testx = p.x, testy = p.y;
+  for (i = 0, j = n - 1; i < n; j = i++) {
+    if ( ((vertex[i].y > testy) != (vertex[j].y > testy)) &&
+     (testx < (vertex[j].x - verte1[i].x) *
+     (testy - vertex[i].y) / (vertex[j].y - vertex[i].y) + vertex[i].x) )
+       c = !c;
+  }
+  return c;
+}
+\end{lstlisting}
+
+\subsection{计算多边形的最小宽度}
+多边形的最小宽度是指以旋转多边形以某个方式垂直下落，通过长度为L的狭缝，狭缝长度的最小值即是多边形的最小宽度。例如长宽为4，5的矩形的最小宽度为4.\\
+先将多边形求凸包，枚举这个凸包的每一条边，求出所有顶点距离这条边的距离的最大值 ，这就是这条边的多对应的高度，在所有边的高度中取最小值就是最小宽度L.
+\begin{lstlisting}
+inline bool cmp_x(const Point a, const Point b)
+{
+    if(a.x == b.x) return a.y < b.y;
+    return a.x < b.x;
+}
+
+//求凸包
+inline int Andrew()
+{
+    sort(point,point + m, cmp_x);
+    int k = 0;
+    for(int i = 0; i < m; i++){
+        while(k > 1 && (vertex[k - 1] - vertex[k - 2]).cross
+        (point[i] - vertex[k - 1]) <= 0){
+            k --;
+        }
+        vertex[k++] = point[i];
+    }
+    int m = k;
+    for(int i = n - 2; i >= 0; i--){
+        while(k > m && (vertex[k -1] - vertex[k - 2]).cross
+        (point[i] - vertex[k - 1]) <= 0){
+            k --;
+        }
+        vertex[k++] = point[i];
+    }
+    if(k > 1) k--;
+    return k;
+}
+
+//计算 c 到 a--b 的距离
+inline double GetHight(Point a, Point b, Point c)
+{
+    double d1 = a.dis(b);
+    double d2 = (b - a).cross(c - a);
+    return fabs(d2 / d1);
+}
+
+//计算凸包边相对顶点的最远距离,在所有距离中取最小值
+inline double GetMInWidth(int k)
+{ //k 是凸包顶点数目
+    vertex[k] = vertex[0];
+    double res = 1e6;
+    for(int i = 0; i < k; i++){
+        double tmp = -1.0;
+        for(int j = 0; j < k; j++){
+            tmp = max(tmp, GetHight(vertex[i], vertex[i + 1], vertex[j]));
+        }
+        res = min(res, tmp);
+    }
+    return res;
+}
+\end{lstlisting}
+
+\subsection{计算多边形的最长内直径}
+多边形的最长内直径是指多边形顶点间的最大距离，并且这个最大距离的顶点连线不超出多边形内部。 \\
+如果多边形是一个凸包的话，那很好办，直接暴力扫一遍顶点 间距离然后取最大即可。但是多边形可能是凹多边形啊。首先最长内直径的一个端点一定是多边形的顶点，另一端点可能在某条边上（这时一定存在多边形顶点在这条内直径上）或者另一端点也是多边形的顶点，所以可以枚举多边形的顶点a和b，计算直线ab和多边形的所有交点(步骤1)，得到的所有交点都是在一条直线上的，但是将所有交点按照距离最左下角交点距离远近排序，相邻两个交点构成了一条小线段，并不是每条小线段都是在多边形的内部的，这时只需要判断线段的中点是否在多边形的内部或者是多边形边上的点即可，将所有在多边形内部的小线段打上标记，那么，连续最长的在多边形内部的小线段就构成了枚举顶点ab时得到的最大内直径。枚举所有顶点对，取最大即可。 \\
+步骤1的实现：考虑直线ab和多边形所有边的交点。如果边和直线ab平行，那么这条边的两个端点都要取，如果边不和直线ab平行，计算边所在直线和ab的交点，判断交点是否在边上即可。这样取完交点后需要去重。
+多边形的顶点需预先逆时针/顺时针排序。
+\begin{lstlisting}
+//vertex1 是多边形的顶点， point1 是枚举顶点直线和多边形边的所有交点
+int line_flag[MAX_N];
+
+struct Line{
+    Point st, ed;
+
+    Line () {}
+    Line (Point _st, Point _ed) : st(_st), ed(_ed) {}
+}line[MAX_N], line1[MAX_N];
+
+//判断点 q 是否在线段 p1--p2 上
+inline bool on_seg(Point p1, Point p2, Point q)
+{
+    return (p1 - q).cross(p2 - q) == 0 && (p1 - q).dot(p2 - q) <= 0;
+}
+
+//判断 p 是否在直线 a 上
+bool on_straight_line(Line a, Point p)
+{
+    Point st = a.st, ed = a.ed;
+    if(p == st || p == ed) return true;
+    if((p.x - st.x) * (ed.y - st.y) == (p.y - st.y) *(ed.x - st.x)) return true;
+    else return false;
+}
+
+//获得直线 a 和直线 b 的交点
+inline Point GetInter(Line a, Line b)
+{
+    Point p1, p2, q1, q2;
+    p1 = a.st, p2 = a.ed;
+    q1 = b.st, q2 = b.ed;
+    return p1 + (p2 - p1) *((q2 - q1).cross(q1 - p1) / (q2 - q1).cross(p2 - p1));
+}
+
+//判断直线 a 和 b 是否平行
+inline bool Parallel(Line a, Line b)
+{
+    Point p1, p2, q1, q2;
+    p1 = a.st, p2 = a.ed;
+    q1 = b.st, q2 = b.ed;
+    if((p2.y - p1.y) * (q2.x - q1.x) == (p2.x - p1.x) * (q2.y - q1.y)) return true;
+    else return false;
+}
+
+//获得直线 a 和多边形的所有交点
+inline int GetPoint(Line a)
+{
+    int total = 0;
+    for(int i = 0; i < n; i++){
+        if(Parallel(a, line[i])) {
+            if(on_straight_line(a, line[i].st)){
+                point1[total++] = line[i].st;
+                point1[total++] = line[i].ed;
+            }
+        }else {
+            Point inter = GetInter(a, line[i]);
+            if(on_seg(line[i].st, line[i].ed, inter)){
+                point1[total++] = inter;
+            }
+        }
+    }
+    return total;
+}
+
+Point zuoxiajiao;
+inline Point Getzuoxiajiao(int total)
+{
+    Point ans = point1[0];
+    for(int i = 1; i < total; i++){
+        if(point1[i].x < ans.x ||
+        (point1[i].x == ans.x && point1[i].y < ans.y)){
+            ans = point1[i];
+        }
+    }
+    return ans;
+}
+
+//将所有交点按照距离最左下角点的距离从小到大排序
+inline bool cmp_zuoxiajiao(const Point a, const Point b)
+{
+    return a.dis(zuoxiajiao) < b.dis(zuoxiajiao);
+}
+
+//判断点 p 是否在多边形内部
+inline bool in_polygon(Point p)
+{
+  int i, j, c = 0;
+  double testx = p.x, testy = p.y;
+  for (i = 0, j = n - 1; i < n; j = i++) {
+    if ( ((vertex1[i].y > testy) != (vertex1[j].y > testy)) &&
+     (testx < (vertex1[j].x - vertex1[i].x) *
+     (testy - vertex1[i].y) / (vertex1[j].y - vertex1[i].y) + vertex1[i].x) )
+       c = !c;
+  }
+  return c;
+}
+
+//获得多边形的最长内直径
+inline double GetDiameter()
+{
+    double res = -1.0;
+    for(int i = 0; i < n; i++){
+        for(int j = i + 1; j < n; j++){
+            int total = GetPoint(Line(vertex1[i], vertex1[j]));
+            zuoxiajiao = Getzuoxiajiao(total);
+            sort(point1, point1 + total, cmp_zuoxiajiao);
+            int line_cnt = unique(point1, point1 + total) - point1 - 1; //去重
+            for(int k = 0; k < line_cnt; k++){
+                line1[k] = Line(point1[k], point1[k + 1]);
+            }
+            memset(line_flag, 0, sizeof(line_flag));
+            for(int k = 0; k < line_cnt; k++){
+                Point mid;
+                mid.x = (line1[k].st.x + line1[k].ed.x) / 2;
+                mid.y = (line1[k].st.y + line1[k].ed.y) / 2;
+                if(in_polygon(mid)){
+                    line_flag[k] = 1;
+                }
+            }
+            double tmp = -1.0;
+            int have = 0;
+            Point prest, nowed;
+            for(int k = 0; k < line_cnt; k++){
+                if(line_flag[k]){
+                    if(have == 0){
+                        have = 1;
+                        prest = line1[k].st;
+                    }
+                    nowed = line1[k].ed;
+                }else {
+                    if(have == 1){
+                        tmp = max(tmp, nowed.dis(prest));
+                        have = 0;
+                    }
+                }
+            }
+            if(have == 1){
+                tmp = max(tmp, nowed.dis(prest));
+            }
+            res = max(res, tmp);
+        }
+    }
+    return res;
+}
+\end{lstlisting}
+
+
+%\end{document}

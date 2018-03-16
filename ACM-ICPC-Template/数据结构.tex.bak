@@ -1,0 +1,2119 @@
+%\input{style}
+%\begin{document}
+
+\chapter{数据结构}
+
+\section{哈希}
+
+\underline{HDU 5918} \\
+
+给定元素个数分别为$n\leq 10^{6}$和$m\leq 10^{6}$的数组$A[]$和$B[]$(下标从1开始)和一个常数$p\leq 10^{6}$，求在数组$A[]$中满足$A[q]=B[1],A[q+p]=B[2],A[q+2*p]=B[3]...,A[q+(m-1)*p]=B[m]$的位置$q(1\leq q, q+(m-1)*p \leq n)$的个数。
+
+\begin{lstlisting}
+const ll mod1 = 10341289111ll;
+const ll mod2 = 10327287111ll;
+const ll prime1 = 95734711;
+const ll prime2 = 132134911;
+const int MAX_N = 1000010;
+
+int T, n, m, p, cases = 0;
+int A[MAX_N], B[MAX_N];
+
+struct Hash {
+	ll a, b;
+} hesh[MAX_N];
+
+void solve()
+{
+	ll ret1 = 0, ret2 = 0;
+	ll pw1 = 1, pw2 = 1;
+	for (int i = 1; i <= m; ++i) {
+		ret1 = (ret1 * prime1 % mod1 + B[i]) % mod1;
+		if (i > 1) pw1 = pw1 * prime1 % mod1;
+
+		ret2 = (ret2 * prime2 % mod2 + B[i]) % mod2;
+		if (i > 1) pw2 = pw2 * prime2 % mod2;
+	}
+	for (int i = 1; 1ll * (m - 1) * p + i <= n; ++i) {
+		if (i <= p) {
+			hesh[i].a = hesh[i].b = 0;
+			for (int j = 0; j < m; ++j) {
+				int pos = i + j * p;
+				hesh[i].a = (hesh[i].a * prime1 % mod1 + A[pos]) % mod1;
+				hesh[i].b = (hesh[i].b * prime2 % mod2 + A[pos]) % mod2;
+			}
+		} else {
+			hesh[i].a = (hesh[i - p].a - (ll)A[i - p] * pw1 % mod1) * prime1 % mod1;
+			hesh[i].a = (hesh[i].a + A[i + (m - 1) * p]) % mod1;
+			if (hesh[i].a < 0) hesh[i].a += mod1;
+
+			hesh[i].b = (hesh[i - p].b - (ll)A[i - p] * pw2 % mod2) * prime2 % mod2;
+			hesh[i].b = (hesh[i].b + A[i + (m - 1) * p]) % mod2;
+			if (hesh[i].b < 0) hesh[i].b += mod2;
+		}
+	}
+	int ans = 0;
+	for (int i = 1; 1ll * (m - 1) * p + i <= n; ++i) {
+		if (hesh[i].a == ret1 && hesh[i].b == ret2) ans++;
+	}
+	printf("Case #%d: %d\n", ++cases, ans);
+}
+
+int main()
+{
+	scanf("%d", &T);
+	while (T--) {
+		scanf("%d%d%d", &n, &m, &p);
+		for (int i = 1; i <= n; ++i) {
+			scanf("%d", &A[i]);
+		}
+		for (int i = 1; i <= m; ++i) {
+			scanf("%d", &B[i]);
+		}
+		solve();
+	}
+	return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{并查集}
+
+\subsection{加权并查集}
+$n$表示$n$个数字，编号$1–n$，然后有$m$个区间$[l,r]$和该区间和$s$，问在这$m$个区间中有多少个区间和是不正确的？ 如果不正确就忽略该区间和，否则将该区间和作为已知条件使用。\\
+
+需要一个数组$val$,$val[i]$表示$i$到根节点的距离，然后就是在查找根节点的过程更新路径上结点的$val$,和在$mix$函数里判断该区间和是否有效。l到$r$之间的和为$s$可以理解为$l$到$r$的距离为$s$。
+\begin{lstlisting}
+const int maxn = 200010;
+
+int val[maxn], pre[maxn];
+int n, m, u, v, w;
+//val[i]:i 到根节点的距离； pre[i]:i 的父节点
+
+int find(int x)
+{
+    if (pre[x] == x) return x;
+    int tmp = find(pre[x]); // tmp 是 x 的根节点
+    val[x] = val[x] + val[pre[x]];
+    // 在递归时 x 还未连接到根节点上，只连接到父节点上，
+    // 所以这时的 val[x] 实际上是到父节点的距离
+    // 而 val[pre[x]] 是父节点到根节点的距离，
+    // 所以真正的 val[x]=val[x]+val[pre[x]], 左边的 val[x] 是到根节点距离，右边的是到父节点距离
+    // 可以从递归倒数第二层往前想
+    return pre[x] = tmp;//路径压缩
+}
+
+int mix(int x, int y, int z)
+{
+    int fx = find(x), fy = find(y);
+    if (fx != fy) {
+        pre[fx] = fy; // 将 x 的根节点 fx 的父节点设为fy
+        val[fx] = val[y] - val[x] + z;
+        // x 到 y 的距离是 z ， x 到 fx 的距离是 val[x] ， y 到 fy 的距离是 val[y]
+        // 那么 fx 到 fy 的距离 val[fx]=x 到 fy 的距离 （z+val[y]）- x 到 fx 的距离 val[x]
+        return 0;
+    } else {
+        if (abs(val[y] - val[x]) == z) return 0; // 必须是绝对值才行
+        // 因为尽管 y>x ，但是到根节点的距离不确定大小（到根结点路径上个点的值大小不确定）
+        return 1;
+    }
+}
+
+int main()
+{
+   while (~scanf("%d%d", &n, &m)){
+   //因为接下来由 u-- 的存在，所以要从0开始
+        for (int i = 0; i <= n; i++)
+            pre[i] = i;
+        memset(val, 0, sizeof(val));
+        int ans = 0;
+        for (int i = 1; i <= m; i++) {
+            scanf("%d%d%d", &u, &v, &w);
+            u--; // 这样做符合 val 的含义
+            ans += mix(u, v, w);
+        }
+        printf("%d\n", ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{分层并查集}
+
+有$n$个动物，编号$1–n$，每个动物属于A,B,C三种中的一种，并且A种动物吃B种动物，B种动物吃C种动物，C种动物吃A种动物。 有$K$ 条语句。格式是：$d,x,y$。
+\begin{itemize}
+\item $d = 1$时表示$x$和$y$是属于同一种类
+\item $d = 2$时表示$x$吃$y$
+\end{itemize}
+这条语句如果满足下列条件之一就是错误的语句：
+\begin{itemize}
+\item 当前的话与前面的某些真的话冲突，就是假话；
+\item 当前的话中$X$或$Y$比$N$大，就是假话；
+\item 当前的话表示$X$吃$X$，就是假话。
+\end{itemize}
+问$K$条语句中一共有多少条语句是错误的？ \\
+
+在数组$pre[3*maxn]$中，$1–n$表示种类A，$n+1–2*n$表示种类B，$2*n+1–3*n$表示种类C。 \\
+当$d=1$时：先检查$x$和$y$是否属于不同的种类，如果是不同种类，则$ans++$，否则就将$x$，$y$同属于A,B,C依次$mix$； \\
+当$d=2$时：先检查$x$和$y$是否属于同一种类和$y$吃$x$的情况，如果是的，则$ans++$，否则就将$x$属于A，$y$属于B；$x$属于B，$y$属于C；$x$属于C，$y$属于A三种情况$mix$
+\begin{lstlisting}
+const int maxn = 50010;
+
+int n, k, d, x, y;
+int pre[3 * maxn];
+
+int find(int x)
+{
+    return pre[x] == x ? x : pre[x] = find(pre[x]);
+}
+
+void mix(int x, int y)
+{
+    int fx = find(x), fy = find(y);
+    if (fx != fy){
+        pre[fx] = fy;
+    }
+}
+
+int main()
+{
+    scanf("%d%d", &n, &k);
+    for (int i = 1; i <= 3 * n; i++)
+        pre[i] = i;
+    int ans = 0;
+    for (int i = 0; i < k; i++){
+        scanf("%d%d%d", &d, &x, &y);
+        if (x > n || y > n || (d == 2 && x == y)){
+            ans++;
+            continue;
+        }
+        if (d == 1){
+            if (find(x) == find(y + n) || find(y) == find(x + n)) ans++;
+            // 因为当 x 和 y 属于不同种类时无非是 x 吃 y 或者 y 吃 x
+            // 而且每种捕食关系的三种种类归属情况同时入队列，
+            //所以检查 x 和 y 属于不同种类就是检查 x 和 y+n 与 x+n 和 y 是否属于同一集合
+            // （前者是 x 吃 y ，后者是 y 吃 x ）
+            else {
+                mix(x, y); // 同属A
+                mix(x + n, y + n); // 同属 B
+                mix(x + 2 * n, y + 2 * n); // 同属 C
+            }
+        }else {
+            if (find(x) == find(y) || find(y) == find(x + n)) ans++;
+            //前者是检查 x 和 y 是否属于同一种类，后者是检查是否是 y 吃 x
+            else{
+                mix(x, y + n); //x 属于 A , y 属于 B
+                mix(x + n, y + 2 * n); // x 属于 B , y 属于 C
+                mix(x + 2 * n, y); // x属于 C ， y 属于 A
+            }
+        }
+    }
+    printf("%d\n", ans);
+    return 0;
+}
+\end{lstlisting}
+
+有$n$个数字，每个数字非0即1，有$m$条语句，每条语句：$l,r,even/odd$，表示$l$到$r$区间上有奇/偶个1. 问最多前多少条语句是正确的？\\
+
+用$val[i]$表示从$i$到根节点路径上含有1的数量的奇偶性。在寻找根节点的同时更新路径上的$val$。 \\
+比较麻烦的是数据范围:$n<=1000000000，m<=5000$. \\
+1.可以用map来标记各个读入点的次序，相当于有个代号，在map里没读入的话就添加进map \\
+在$find()$和$mix()$函数里相当于是对代号的操作，代号具有唯一性。 \\
+由于$m<=5000$，所以最多会读入10000个相异的数，那么对于$pre$数组和$val$数组都是可以接受的了。 \\
+2.$hash$思路。同样是代号的想法，把l(或r) mod maxn 值相同的归在一类,用$head$数组的下标记录这类，head的数值表示最后一类的读入位置。和最短路里链式前向星的查找类似。
+\begin{lstlisting}
+const int maxn=10010;
+
+int pre[maxn],val[maxn],n,m,l,r,w;
+char s[10];
+
+int find(int x)
+{
+    if(pre[x]==x) return x;
+    int tmp=find(pre[x]);
+    val[x]=(val[x]+val[pre[x]])%2;
+    return pre[x]=tmp;
+}
+
+int mix(int x,int y,int z)
+{ // 语句正确， mix 返回 1 ，否则返回0
+    int fx=find(x);
+    int fy=find(y);
+    if(fx!=fy)
+    {
+        pre[fx]=fy;
+        val[fx]=(val[y]-val[x]+z)%2;
+        return 1;
+    }
+    else
+    {
+        if(abs(val[x]-val[y])%2==z) return 1;
+        return 0;
+    }
+}
+
+int main()
+{
+    while(~scanf("%d",&n)&&n){
+        for(int i=0;i<maxn;i++){
+            pre[i]=i;
+            val[i]=0;
+        }
+        scanf("%d",&m);
+        int ok=0;
+        int ans=0;
+        int index=0;
+        map<int,int> mp;
+        for(int i=1;i<=m;i++) {
+            scanf("%d%d%s",&l,&r,s);
+            if(s[0]=='e') w=0;
+            else w=1;
+            l--; // 这样做就可以合并相邻的区间，例如：读入 l=1,r=2 和 l=3,r=4
+            if(mp.find(l)==mp.end()) mp[l]=index++;
+            // find() 函数返回一个迭代器指向键值为 key 的元素
+            // 如果没找到就返回指向 map 尾部的迭代器
+            if(mp.find(r)==mp.end()) mp[r]=index++;
+            // 假设前 x 条语句是正确的，第 x+1 条是错的
+            // 那么前 x 次读入 ok 都为 0 ，第 x+1 次读入由于 ok=0,mix() 返回0
+            // 所以执行 else 语句， ok 变为 1 ， ans=i-1=(x+1)-1=x
+            // 从 x+2 开始由于 ok=1 ，不会执行 || 后面的判断，恒continue.
+            if(ok||mix(mp[l],mp[r],w)) continue;
+            else ok=1;
+            if(ok) ans=i-1;
+        }
+        if(ok==0) ans=m; // 所有的语句都是正确的
+        printf("%d\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+平面上有$n$个点，每个点可以在东西南北四个方向上与另外一个点连接，（每个点最多和四个直接连通） 然后有$m$条语句用以表示这$n$个点之间的位置关系：$a,b,d,S$表示$a$点在$b$点南方，距离为$d(N,W,E$分别表示北，西，东） 接着有$k$条语句来查询：$a，b，t$：由$m$条语句中的前$t$条能否得出$a，b$两点间的哈夫曼距离， 如果由$m$条语句中的前$t$条得出$a，b$两点不连通，则结果为-1. \\
+
+先查询按照查询的t由小到大排序，然后将读入数据读入并查集到相应次序，两个点是否连通可通过$find$来判断。 $x[i]，y[i]$分别表示点$i$ 到根节点在横向和竖向的距离。 \\
+那么如果$uu,vv$两点连通距离就是$abs(x[uu]-x[vv])+abs(y[uu]-y[vv])$; 但是输出需要按照查询的顺序输出，所以可以把查询语句用结构体存储，并且结构体中一个变量用于存储查询顺序，那么计算每条语句的$ans$时，把查询语句结构体数组按照$t$排序，输出时，再把查询语句按照查询顺序排序输出。
+\begin{lstlisting}
+const int maxn=40010;
+const int maxk=10010;
+
+int pre[maxn],x[maxn],y[maxn],n,m,k,a,b,d,tx,ty;
+char ss[10];
+
+struct Query{
+    int index,u,v,t,ans;
+    // ans 是该条查询语句的答案
+}query[maxk];
+
+struct Read{
+    int u,v,xx,yy;
+}read[maxn];
+
+bool cmp1(Query Q1,Query Q2)
+{ //按查询语句的 t 排序
+    if(Q1.t==Q2.t) return Q1.index<Q2.index;
+    return Q1.t<Q2.t;
+}
+
+bool cmp2(Query Q1,Query Q2)
+{ //按查询语句的查询顺序排序
+    return Q1.index<Q2.index;
+}
+
+int find(int u)
+{
+    if(pre[u]==u) return u;
+    int tmp=find(pre[u]);
+    x[u]=x[u]+x[pre[u]];
+    y[u]=y[u]+y[pre[u]];
+    return pre[u]=tmp;
+}
+
+void mix(int a,int b,int tx,int ty)
+{
+    int fa=find(a);
+    int fb=find(b);
+    if(fa!=fb){
+        pre[fa]=fb;
+        x[fa]=x[b]-x[a]+tx;
+        y[fa]=y[b]-y[a]+ty;
+    }
+}
+
+int main()
+{
+    while(~scanf("%d%d",&n,&m)&&n){
+        for(int i=0;i<=n;i++)
+            pre[i]=i;
+        memset(x,0,sizeof(x));
+        memset(y,0,sizeof(y));
+        for(int i=1;i<=m;i++){
+            scanf("%d%d%d%s",&a,&b,&d,ss);
+            if(ss[0]=='E'){tx=d;ty=0;} // 这里对方向做了统一规定
+            else if(ss[0]=='W'){tx=-d;ty=0;}
+            else if(ss[0]=='S'){tx=0;ty=d;}
+            else if(ss[0]=='N'){tx=0;ty=-d;}
+            read[i].u=a;
+            read[i].v=b;
+            read[i].xx=tx;
+            read[i].yy=ty;
+        }
+        scanf("%d",&k);
+        for(int i=1;i<=k;i++){
+            scanf("%d%d%d",&query[i].u,&query[i].v,&query[i].t);
+            query[i].ans=0;
+            query[i].index=i; //查询顺序标记
+        }
+        sort(query+1,query+k+1,cmp1);
+        int now=1;
+        for(int i=1;i<=k;i++){
+            for(int j=now;j<=query[i].t;j++){
+                a=read[j].u;
+                b=read[j].v;
+                tx=read[j].xx;
+                ty=read[j].yy;
+                mix(a,b,tx,ty);
+            }
+            int uu=query[i].u;
+            int vv=query[i].v;
+            if(find(uu)==find(vv)) // uu 和 vv 连通{
+                query[i].ans=abs(x[uu]-x[vv])+abs(y[uu]-y[vv]);
+            }
+            else query[i].ans=-1;
+
+            now=query[i].t+1;
+        }
+        sort(query+1,query+1+k,cmp2);
+        for(int i=1;i<=k;i++)
+            printf("%d\n",query[i].ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+有$n$个人玩石头剪刀布，有且只有一个裁判。除了裁判每个人的出拳形式都是一样的。
+\begin{itemize}
+\item $a<b$表示$b$打败$a$
+\item $a=b$表示$a$和$b$出拳一样，平手
+\item $a>b$表示$a$打败$b$
+\end{itemize}
+给出$m$个回合的游戏结果，问能否判断出谁是裁判？如果能还要输出是在哪个回合之后判断出谁是裁判。\\
+
+枚举和加权并查集。\\
+对于每个人假设其为裁判，然后去掉所有和他有关的匹配，判断是否会出现矛盾。
+\begin{itemize}
+\item $val[i]=0$:$i$和根节点属于同一集合
+\item $val[i]=1$:根节点打败$i$
+\item $val[i]=2$:$i$打败根节点
+\end{itemize}
+在寻找根节点的$find()$函数中，$val$的更新函数是：$val[x]=(val[x]+val[pre[x]])\%3 $ \\
+举个例子：找到根节点之前$val[x]=1$，$val[pre[x]]=2$：表示父节点打败$x$，父节点也打败父节点的父节点。（注意此时$val[x]$是$x$ 与父节点的关系）所以按照递归的思路，从递归倒数第二层开始$pre[x]$就表示为根节点了，那么$pre[x]$打败根节点。又因为$pre[x]$ 也打败$x$所以$val[x]=0=(1+2)\%3$; 递归在往上一层时$pre[x]$又表示为根节点了。 \\
+再来看看合并操作时的$val$关系。$fa,fb$分别为$aa,bb$的根节点，$ww$是$aa$与$bb$的关系。 \\
+当$fa！=fb$时，令$pre[fa]=fb$.假设$val[aa]=1$,即$fa$打败$aa...(1)$,$val[bb]=2$，即$bb$打败$fb...(2)$，$ww=1$，即$bb$打败$aa...(3)$。则由(1)(2)的$aa$和$fb$是同一集合。再由(1)得$fa$打败$fb$。即$val[fa]=2$.也就是$val[fa]=(val[bb]-val[aa]+ww)\%3$,但是由于有可能$val[bb]-val[aa]+ww<0$，所以正确的方程是：$val[fa]=(val[bb]-val[aa]+ww+3)\%3$.当$fa==fb$时，那么就要判断是否出现矛盾，如果出现矛盾那么说明$i$不能作为裁判。判断矛盾是：$(val[aa]-val[bb]+3)\%3$和$ww$是否相等。如果不矛盾，那么就接着读入输入到最后。
+
+还要注意一点就是可能会出现多个裁判，那就是Can not determine。
+\begin{lstlisting}
+const int maxn = 510;
+const int maxm = 2010;
+
+int n,m,aa,bb,ww;
+int pre[maxn],val[maxn];
+int line,tmpline, ans,cnt,flag;
+char s;
+
+struct Read {
+    int a, b, w;
+}read[maxm];
+
+void init()
+{
+    for (int i = 0; i <maxn; i++){
+        pre[i] = i;
+        val[i]=0;
+    }
+}
+
+int find(int x)
+{
+    if(pre[x]==x) return x;
+    int tmp=find(pre[x]);
+    val[x]=(val[x]+val[pre[x]])%3;
+    return pre[x]=tmp;
+}
+
+int main()
+{
+    while (~scanf("%d%d", &n, &m)){
+        if (m == 0){
+            //printf("case 1\n");
+            if(n==1)
+     printf("Player 0 can be determined to be the judge after 0 lines\n");
+            else printf("Can not determine\n");
+            continue;
+        }
+        for (int i = 0; i<m; i++){
+            scanf("%d%c%d", &aa, &s, &bb);
+            read[i].a=aa;
+            read[i].b=bb;
+            if (s == '=') read[i].w=0;
+            else if(s=='<') read[i].w=1;
+            else if(s=='>') read[i].w=2;
+        }
+        line=-1;
+        cnt=0;
+        for(int i=0;i<n;i++)//枚举每个人{
+            init();
+            tmpline=-1;
+            flag=0;
+            for(int j=0;j<m;j++) {
+                aa=read[j].a;
+                bb=read[j].b;
+                ww=read[j].w;
+                if(aa==i||bb==i) continue;
+                //去掉i的影响看是否还会出现矛盾
+                int fa=find(aa);
+                int fb=find(bb);
+                if(fa!=fb){
+                    pre[fa]=fb;
+                    val[fa]=(val[bb]-val[aa]+ww+3)%3;
+                } else{
+                    if((val[aa]-val[bb]+3)%3!=ww)//出现矛盾{
+                        tmpline=j+1;
+                        //出现矛盾所在行
+                        flag=1;
+                        break;
+                    }
+                }
+                if(flag) break;
+            }
+            if(flag==0)//没出现矛盾{
+                ans=i;//i可以是裁判
+                cnt++;
+                if(cnt>=2) break;//裁判数量 >=2
+            }
+            else line=max(line,tmpline);//
+        }
+        if(cnt==0){
+            //printf("case 2\n");
+            printf("Impossible\n");
+        }else if(cnt>=2){
+            //printf("case 3\n");
+            printf("Can not determine\n");
+        }else{
+            //printf("case 4\n");
+ printf("Player %d can be determined to be the judge after %d lines\n",ans,line);
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{$RMQ$}
+
+用于解决区间最值问题，需要$O(n\log n)$的预处理。
+\begin{lstlisting}
+int n;
+int data[MAX_N], dp[MAX_N][20];
+
+void RMQ()
+{
+	memset(dp, 0, sizeof(dp));
+	int k = (int)log2(n * 1.0);
+	for (int i = 0; i < n; ++i) { dp[i][0] = data[i]; }
+	for (int j = 1; j <= k; ++j) { // 注意枚举顺序
+		for (int i = 0; i + (1 << j) - 1 < n; ++i) {
+		//一定要 -1 ，因为从 i 开始的第 1<<j 个元素下标是 i + (1 << j) - 1
+			int k = i + (1 << (j - 1));
+			dp[i][j] = max(dp[i][j - 1], dp[k][j - 1]);
+		}
+	}
+}
+
+// 查询区间 [left, right] 的最值
+int len = right - left + 1;
+int e = (int)log2(len * 1.0);
+int k = right - (1 << e);
+res = max(dp[left][e], dp[k][e]);
+\end{lstlisting}
+
+\clearpage
+\section{线段树}
+
+\subsection{矩形并的周长}
+
+\begin{lstlisting}
+#define lson(x) (x<<1)
+#define rson(x) ((x<<1)|1)
+const int maxn = 5050;
+// maxn 是最大矩形数
+
+int n, x1, x2, yy1, y2;
+int xx[maxn << 2];
+
+struct SegTree{
+    int left, right, len, num, flag;
+    // len 是有效长度， num 是有几条线段, flag 记录状态
+    bool lcover, rcover;
+    // 记录区间左右端点是否存在竖边
+}segtree[maxn << 4];
+
+struct Line{
+    int x1, x2, y, flag;
+    bool operator < (const Line a) const{
+        return y < a.y;
+    }
+}line[maxn << 2];
+
+void build(int left, int right, int cur)
+{
+    segtree[cur].left = left;
+    segtree[cur].right = right;
+    segtree[cur].len = segtree[cur].num = segtree[cur].flag = 0;
+    segtree[cur].lcover = segtree[cur].rcover = false;
+    if(left + 1 == right) return ;
+    int mid = (left+right) >> 1;
+    build(left, mid, lson(cur));
+    build(mid, right, rson(cur));
+}
+
+void calc_len(int cur)
+{
+    int left = segtree[cur].left;
+    int right = segtree[cur].right;
+    if(segtree[cur].flag > 0){
+        segtree[cur].len = xx[right] - xx[left];
+        segtree[cur].num = 1;
+        segtree[cur].lcover = segtree[cur].rcover = true;
+    }else if(left + 1 == right){
+        segtree[cur].len = segtree[cur].num = 0;
+        segtree[cur].lcover = segtree[cur].rcover = false;
+    }else{
+        segtree[cur].len = segtree[lson(cur)].len + segtree[rson(cur)].len;
+        segtree[cur].num = segtree[lson(cur)].num + segtree[rson(cur)].num;
+        segtree[cur].lcover = segtree[lson(cur)].lcover;
+        segtree[cur].rcover = segtree[rson(cur)].rcover;
+        if(segtree[lson(cur)].rcover && segtree[rson(cur)].lcover)
+        // 左右儿子的线段可以衔接
+            segtree[cur].num--;//合并成一个线段，所以线段数量-1
+    }
+    return;
+}
+
+void update(int a, int b, int flag, int cur)
+{
+    int left = segtree[cur].left;
+    int right = segtree[cur].right;
+    if(left==a && right==b){
+        segtree[cur].flag += flag;
+        calc_len(cur);
+        return;
+    }
+    if(left + 1 == right) return;
+    int mid = (left + right) >> 1;
+    if(b <= mid) update(a, b, flag, lson(cur));
+    else if(a >= mid) update(a, b, flag, rson(cur));
+    else{
+        update(a, mid, flag, lson(cur));
+        update(mid, b, flag, rson(cur));
+    }
+    calc_len(cur);
+}
+
+int main()
+{
+    while(~scanf("%d", &n)){
+        int tot = 0;
+        for(int i = 0; i < n; i++){
+            scanf("%d%d%d%d", &x1, &yy1, &x2, &y2);
+            line[tot].x1 = x1, line[tot].x2 = x2;
+            line[tot].y = yy1, line[tot].flag = 1;
+            line[tot+1].x1 = x1, line[tot+1].x2 = x2;
+            line[tot+1].y = y2, line[tot+1].flag = -1;
+            xx[tot] = x1, xx[tot+1] = x2;
+            tot += 2;
+        }
+        sort(xx, xx + tot);
+        int m = unique(xx, xx + tot) - xx;
+        build(0, m - 1, 1);
+        sort(line, line + tot);
+        int ans = 0, last = 0, a, b;
+        for(int i=0;i<tot-1;i++){
+            a=lower_bound(xx,xx+m,line[i].x1)-xx;
+            b=lower_bound(xx,xx+m,line[i].x2)-xx;
+            update(a,b,line[i].flag,1);
+            ans+=(line[i+1].y-line[i].y)*segtree[1].num*2;
+            //竖边数量是线段数量的两倍
+            ans+=abs(segtree[1].len-last);
+            / /因为加上边时 flag 为 -1 ，这时线段树中这条边就不存在了
+            // 但是求周长时是应该加上的
+            // 而且在上一棵线段树中是有的，所以要用abs
+            last=segtree[1].len;
+        }
+        a=lower_bound(xx,xx+m,line[tot-1].x1)-xx;
+        b=lower_bound(xx,xx+m,line[tot-1].x2)-xx;
+        update(a,b,line[tot-1].flag,1);
+        ans+=abs(segtree[1].len-last);
+        printf("%d\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{矩形交的面积}
+\begin{lstlisting}
+#define lson(x) (x<<1)
+#define rson(x) ((x<<1)|1)
+using namespace std;
+
+const int maxn=5050;
+
+int T,n;
+double x1,x2,yy1,y2,xx[maxn<<2];
+
+struct SegTree{
+    int left,right,flag;
+    double len1,len2;
+    // len1 是覆盖一次的长度， len2 是覆盖不止一次的长度
+}segtree[maxn<<4];
+
+struct Line{
+    double x1,x2,y;
+    int flag;
+    bool operator < (const Line a) const{
+        return y<a.y;
+    }
+}line[maxn<<2];
+
+inline void build(int left,int right,int cur)
+{
+    segtree[cur].left=left;
+    segtree[cur].right=right;
+    segtree[cur].flag=0;
+    segtree[cur].len1=segtree[cur].len2=0;
+    if(left+1==right) return ;
+    int mid=(left+right)>>1;
+    build(left,mid,lson(cur));
+    build(mid,right,rson(cur));
+}
+
+inline void calc_len(int cur)
+{
+    int left=segtree[cur].left;
+    int right=segtree[cur].right;
+    if(segtree[cur].flag>0) segtree[cur].len1=xx[right]-xx[left];
+    else if(left+1==right) segtree[cur].len1=0;
+    else segtree[cur].len1=segtree[lson(cur)].len1+segtree[rson(cur)].len1;
+    // flag>1 说明整个区间有不止一次覆盖, flag=1 说明整个区间是完全覆盖，
+    //但是在这个区间下可能有小区间之前已经被完全覆盖了，所以要加上子树中被覆盖一次的的区间长度
+    // flag<1 那么就是左右子树覆盖两次长度之和
+    if(segtree[cur].flag>1) segtree[cur].len2=xx[right]-xx[left];
+    else if(left+1==right) segtree[cur].len2=0;
+    // 叶子结点且 flag<=1 ，则覆盖两次的长度只能是0
+    else if(segtree[cur].flag==1)
+        segtree[cur].len2=segtree[lson(cur)].len1+segtree[rson(cur)].len1;
+    else segtree[cur].len2=segtree[lson(cur)].len2+segtree[rson(cur)].len2;
+
+    return;
+}
+
+inline void update(int a,int b,int flag,int cur)
+{
+    int left=segtree[cur].left;
+    int right=segtree[cur].right;
+    if(left==a&&right==b){
+        segtree[cur].flag+=flag;
+        calc_len(cur);
+        return;
+    }
+    if(left + 1 == right) return;
+    int mid=(left+right)>>1;
+    if(b<=mid) update(a,b,flag,lson(cur));
+    else if(a>=mid) update(a,b,flag,rson(cur));
+    else{
+        update(a,mid,flag,lson(cur));
+        update(mid,b,flag,rson(cur));
+    }
+    calc_len(cur);
+}
+
+int main()
+{
+    scanf("%d",&T);
+    while(T--){
+        scanf("%d",&n);
+        int tot=0;
+        for(int i=0;i<n;i++){
+            scanf("%lf %lf %lf %lf",&x1,&yy1,&x2,&y2);
+            line[tot].x1=x1,line[tot].x2=x2;
+            line[tot].y=yy1,line[tot].flag=1;
+            line[tot+1].x1=x1,line[tot+1].x2=x2;
+            line[tot+1].y=y2,line[tot+1].flag=-1;
+            xx[tot]=x1,xx[tot+1]=x2;
+            tot+=2;
+        }
+        sort(xx,xx+tot);
+        int m=unique(xx,xx+tot)-xx;
+        build(0,m-1,1);
+        sort(line,line+tot);
+        double ans=0;
+        int a,b;
+        for(int i=0;i<tot-1;i++){
+            a=lower_bound(xx,xx+m,line[i].x1)-xx;
+            b=lower_bound(xx,xx+m,line[i].x2)-xx;
+            update(a,b,line[i].flag,1);
+            //printf("i=%d len=%.2f\n",i,segtree[1].len2);
+            ans+=segtree[1].len2*(line[i+1].y-line[i].y);
+        }
+        printf("%.2f\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\subsection{矩形并面积}
+
+\begin{lstlisting}
+#define lson(x) (x<<1)
+#define rson(x) ((x<<1)|1)
+using namespace std;
+
+const int maxn=110;
+
+int n,cases=0;
+double x1,x2,yy1,y2,xx[maxn<<2];
+
+struct SegTree{
+    int left,right,flag;
+    // 只有 flag=1 时该区间才会完全是有效长度
+    double len;
+}segtree[maxn<<4];
+
+struct Line{
+    int flag;
+    double x1,x2,y;
+    bool operator < (const Line a) const{
+        return y<a.y;
+    }// 将横边按所在 y 值从小到大排序
+}line[maxn<<2];
+
+void build(int left,int right,int cur)
+{
+    segtree[cur].left=left;
+    segtree[cur].right=right;
+    segtree[cur].flag=0;
+    segtree[cur].len=0;// len 是区间所存的有效横边长度
+    if(left+1==right) return;
+    int mid=(left+right)>>1;
+    build(left,mid,lson(cur));
+    build(mid,right,rson(cur));
+    // 如果是按照 [left,mid],[mid+1,right] 建树
+    // 那么会有一段横坐标 [mid,mid+1] 丢失
+}
+
+void calc_len(int cur)
+{
+    int flag=segtree[cur].flag;
+    int left=segtree[cur].left;
+    int right=segtree[cur].right;
+    if(flag) segtree[cur].len=xx[right]-xx[left];
+    // 整个区间长度是区间左右端点所代表的横坐标之差
+    else if(left+1==right) segtree[cur].len=0; // 叶子结点且 flag<=0
+    else segtree[cur].len=segtree[lson(cur)].len+segtree[rson(cur)].len;
+}
+
+void update(int a,int b,int flag,int cur)
+{
+    int left=segtree[cur].left;
+    int right=segtree[cur].right;
+    if(left==a&&right==b){
+        segtree[cur].flag+=flag;
+        calc_len(cur);
+        return;
+    }
+    if(left + 1 == right) return;
+    int mid=(left+right)>>1;
+    if(b<=mid) update(a,b,flag,lson(cur));
+    else if(a>=mid){
+        update(a,b,flag,rson(cur));
+    }else {
+        int mid=(left+right)>>1;
+        update(a,mid,flag,lson(cur));
+        update(mid,b,flag,rson(cur));
+    }
+    calc_len(cur);
+}
+
+int main()
+{
+    while((~scanf("%d",&n))&&n){
+        int tot=0;
+        for(int i=0;i<n;i++){
+            scanf("%lf %lf %lf %lf",&x1,&yy1,&x2,&y2);
+            xx[tot]=x1,xx[tot+1]=x2;
+            line[tot].x1=x1,line[tot].x2=x2;
+            line[tot].y=yy1,line[tot].flag=1;
+            line[tot+1].x1=x1,line[tot+1].x2=x2;
+            line[tot+1].y=y2,line[tot+1].flag=-1;
+            tot+=2;
+        }
+        sort(xx,xx+tot);
+        int m=unique(xx,xx+tot)-xx; // 将横坐标去重
+        build(0,m-1,1);
+        double ans=0;
+        sort(line,line+tot);
+        //for(int i=0;i<tot;i++)
+        //  printf("%lf %lf %lf\n",line[i].x1,line[i].x2,line[i].y);
+        for(int i=0;i<tot-1;i++){
+            int a=lower_bound(xx,xx+m,line[i].x1)-xx;
+            int b=lower_bound(xx,xx+m,line[i].x2)-xx;
+            update(a,b,line[i].flag,1);
+            ans+=segtree[1].len*(line[i+1].y-line[i].y);
+        }
+        printf("Test case #%d\n",++cases);
+        printf("Total explored area: %.2f\n\n",ans);
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{树状数组}
+
+\begin{lstlisting}
+C[i] = a[i - 2^k + 1] + a[i - 2^k] + ... + a[i];
+// k 是 i 二进制表示中末尾连续的 0 的个数
+
+int lowbit(int x)
+{
+    return x & (-x); // 一个负数的二进制表示与其相反数的二进制之和等于2^32
+    // return x & (x ^ (x - 1));
+    // return x & (~(x - 1));
+}
+\end{lstlisting}
+
+\subsection{单点更新，区间求和}
+更新所有牵动的区间，求和时求所有区间的所有更新，每个区间覆盖若干子区间但是每个子区间的更新都会体现在父区间中。\\
+
+定理：$A[k]$所牵动的序列为：$C[p_1],C[p_2]...$，其中$p_1=k,p_{i+1}=p_{i}+2^{l_i}(i\geq 1,l_i$指$p_{i}$二进制中末尾0的个数)。\\
+
+典型应用：求逆序对数。\\
+
+\subsection{区间更新，单点求值}
+比如区间$[L, R]$要加上$value$，此时数组$C[]$存的是$C$所覆盖的区间改变值之和，那么查询所有覆盖$x$的$C$。\\
+
+区间更新和单点查询复杂度：$O(\log n)$。\\
+\subsection{一维区间更新和区间求和}
+$C$中记录的是区间该变量，$query(x)$是$data[x]$的该变量，设求$[1, R]$区间和，原数据前缀和为$pre[]$，则：
+$$
+\begin{aligned}
+Ans(R)&=pre[R]+\sum_{i=1}^{R}{query(i)} \\
+&=pre[R]+\sum_{i=1}^{i=R}{C[i]*(R-i+1)} \\
+&=pre[R]+(R+1)*\sum_{i=1}^{i=R}C[i] - \sum_{i=1}^{i=R}{i*C[i]}
+\end{aligned}
+$$
+另开一个数组$B[i]=i*C[i]$，记录并更新即可。
+
+\begin{lstlisting}
+// POJ 3468
+int n, m;
+ll pre[MAX_N], B[MAX_N], C[MAX_N];
+
+struct BIT {
+	ll C[MAX_N], B[MAX_N];
+
+	void init() {
+		memset(B, 0, sizeof (B));
+		memset(C, 0, sizeof (C));
+	}
+	int lowbit(const int& x) const {
+		return x & (-x);
+	}
+	ll seg_query(const int& x) const {
+		ll ret1 = 0, ret2 = 0;
+		for (int i = x; i > 0; i -= lowbit(i)) {
+			ret1 += C[i], ret2 += B[i];
+		}
+		return ret1 * (x + 1) - ret2;
+	}
+	void seg_update(const int& x, const ll& value)  {
+		for (int i = x; i <= n; i += lowbit(i)) {
+			C[i] += value, B[i] += value * x; // 注意这里更新 value * x
+		}
+	}
+} bit;
+
+int main()
+{
+	while (~scanf("%d%d", &n, &m)) {
+		bit.init();
+		for (int i = 1; i <= n; ++i) {
+			ll t;
+			scanf("%lld", &t);
+			if (i == 1) pre[1] = t;
+			else pre[i] = pre[i - 1] + t;
+		}
+		for (int i = 0; i < m; ++i) {
+			char s[10];
+			int L, R;
+			ll t;
+			scanf("%s", s);
+			if (s[0] == 'Q') {
+				scanf("%d%d", &L, &R);
+				printf("%lld\n", bit.seg_query(R) -
+                        bit.seg_query(L - 1) + pre[R] - pre[L - 1]);
+			} else {
+				scanf("%d%d%lld", &L, &R, &t);
+				bit.seg_update(L, t);
+				bit.seg_update(R + 1, -t);
+			}
+		}
+	}
+	return 0;
+}
+\end{lstlisting}
+
+\subsection{二维区间更新和区间求和}
+二维的区间更新和单点求值和一维的类似。
+
+$$
+\begin{aligned}
+\sum_{i=1}^{i=x}\sum_{j=1}^{j=y}{query(i,j)}
+&=\sum_{i=1}^{i=x}\sum_{j=1}^{j=y}{C[i][j]*(x-i+1)*(y-j+1)} \\
+&=\sum_{i=1}^{i=x}\sum_{j=1}^{j=y}{C[i][j]*(x+1)*(y+1)} -(y+1)*\sum_{i=1}^{i=x}\sum_{j=1}^{j=y}{i*C[i][j]} \\
+&-(x+1)*\sum_{i=1}^{i=x}\sum_{j=1}^{j=y}{j * C[i][j]} +\sum_{i=1}^{i=x}\sum_{j=1}^{j=y}{i*j*C[i][j]}
+\end{aligned}
+$$
+
+\begin{lstlisting}
+// 支持区间更新和区间求和操作，测试BZOJ3132
+struct BIT_2D { // 如果必要且空间允许注意开long long
+	int row, col; // 矩阵大小
+	int B[MAX_N][MAX_N], C[MAX_N][MAX_N], D[MAX_N][MAX_N], E[MAX_N][MAX_N];
+
+	void init() {
+		memset(B, 0, sizeof (B));
+		memset(C, 0, sizeof (C));
+		memset(D, 0, sizeof (D));
+		memset(E, 0, sizeof (E));
+	}
+	int lowbit(const int& x) const {
+		return x & (-x);
+	}
+	void seg_update(const int& x, const int& y, const int& value) {
+		for (int i = x; i <= row; i += lowbit(i)) {
+			for (int j = y; j <= col; j += lowbit(j)) {
+				C[i][j] += value;
+				B[i][j] += value * x;
+				D[i][j] += value * y;
+				E[i][j] += value * x * y;
+			}
+		}
+	}
+	int seg_query(const int& x, const int& y) const {
+		int ret1 = 0, ret2 = 0, ret3 = 0, ret4 = 0;
+		for (int i = x; i > 0; i -= lowbit(i)) {
+			for (int j = y; j > 0; j -= lowbit(j)) {
+				ret1 += C[i][j], ret2 += B[i][j];
+				ret3 += D[i][j], ret4 += E[i][j];
+			}
+		}
+		return ret1 * (x + 1) * (y + 1) - ret2 * (y + 1) - ret3 * (x + 1) + ret4;
+	}
+} bit;
+
+// 矩阵左上角为 (a, b) 右下角为 (c, d) , 矩阵从上到下从左到右递增
+// 查询
+ans = bit.seg_query(c, d) + bit.seg_query(a - 1, b - 1);
+ans -= (bit.seg_query(a - 1, d) + bit.seg_query(c, b - 1));
+printf("%d\n", ans);
+// 更新
+scanf("%d", &value);
+bit.seg_update(a, b, value);
+bit.seg_update(c + 1, d + 1, value);
+bit.seg_update(a, d + 1, -value);
+bit.seg_update(c + 1, b, -value);
+\end{lstlisting}
+
+\begin{lstlisting}
+// CF341D: 子矩阵中每个元素都异或 value 和查询子矩阵所有元素异或和
+int n, m;
+ll C[4][MAX_N][MAX_N];
+
+inline int lowbit(int x)
+{
+	return x & (-x);
+}
+
+int GetId(int x, int y)
+{
+	int ret = 0;
+	if (x & 1) ret += 1;
+	if (y & 1) ret += 2;
+	return ret;
+}
+
+void update(int x, int y, ll value)
+{
+	int id = GetId(x, y);
+	for (int i = x; i <= n; i += lowbit(i)) {
+		for (int j = y; j <= n; j += lowbit(j)) {
+			C[id][i][j] ^= value;
+		}
+	}
+}
+
+ll query(int x, int y)
+{
+	ll ret = 0;
+	int id = GetId(x, y);
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		for (int j = y; j > 0; j -= lowbit(j)) {
+			ret ^= C[id][i][j];
+		}
+	}
+	return ret;
+}
+
+int main()
+{
+	scanf("%d%d", &n, &m);
+	for (int i = 0; i < m; ++i) {
+		int id, a, b, c, d;
+		ll value, ans;
+		scanf("%d%d%d%d%d", &id, &a, &b, &c, &d);
+		if (id == 1) {
+			ans = query(c, d);
+			ans ^= query(a - 1, d);
+			ans ^= query(c, b - 1);
+			ans ^= query(a - 1, b - 1);
+			printf("%lld\n", ans);
+		} else {
+			scanf("%lld", &value);
+			update(a, b, value);
+			update(c + 1, d + 1, value);
+			update(a, d + 1, value);
+			update(c + 1, b, value);
+		}
+	}
+	return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{整体二分}
+
+\subsection{[POJ 2104:区间第$k$小]}
+
+\underline{$n\leq 10^{5}$个数和$m\leq 5000$个询问，每次查询区间$[left,right]$第$k_i$小的数是？} \\
+
+首先对于一次询问可以二分答案，然后通过验证比答案大的数有多少个来不断地缩小答案范围直至得到一个准确的答案。而对于多个询问也可以这么做，只不过对每一个询问都需要判定一下，以决定它被划分到哪一个答案的区间里。这个判定过程就是通过比较比二分的$mid$大的数的个数$num$和$k_i$的大小关系。如果比二分的$mid$小的数的个数$num$小于$k_i$，则需要去寻找的答案一定大于$mid$，这时$k'_{i}=k_{i}-num$。如果$num\geq k_i$，那么需要寻找的答案一定$\leq mid$。直到递归结束。\\
+时间复杂度：$O((n+m)*\log ^{2} (n+m)*\log (inf))$
+
+\begin{lstlisting}
+typedef long long ll;
+const int MAX_N = 100010;
+const int MAX_M = 5010;
+const int inf = (int)(1e9) + 10;
+
+int n, m;
+int ans[MAX_M], bit[MAX_N];
+
+struct Query {
+	int type, x, y, k, id;
+} Q[MAX_N + MAX_M], Q1[MAX_N + MAX_M], Q2[MAX_N + MAX_M];
+
+inline int lowbit(int x) { return x & (-x); }
+
+inline void update(int x, int value) {
+	for (int i = x; i <= n; i += lowbit(i)) {
+		bit[i] += value;
+	}
+}
+
+inline int query(int x) {
+	int ret = 0;
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		ret += bit[i];
+	}
+	return ret;
+}
+
+void solve(int qL, int qR, int L, int R) {
+	if (qL > qR) return;
+	if (L == R) {
+		for (int i = qL; i <= qR; ++i) {
+			if (Q[i].type == 2) ans[Q[i].id] = L;
+		}
+		return;
+	}
+	int mid = (L + R) >> 1;
+	int tp1 = 0, tp2 = 0;
+	for (int i = qL; i <= qR; ++i) {
+		if (Q[i].type == 1) {
+			if (Q[i].x <= mid) {
+				update(Q[i].id, Q[i].y); // Q[i].y = 1
+				Q1[tp1++] = Q[i];
+			} else {
+				Q2[tp2++] = Q[i];
+			}
+		} else {
+			int small = query(Q[i].y) - query(Q[i].x - 1);
+			if (small >= Q[i].k) Q1[tp1++] = Q[i];
+			else {
+				Q[i].k -= small;
+				Q2[tp2++] = Q[i];
+			}
+		}
+	}
+	for (int i = 0; i < tp1; ++i) {
+		if (Q1[i].type == 1) update(Q1[i].id, -Q1[i].y);
+	}
+	memcpy(Q + qL, Q1, tp1 * sizeof (Query));
+	memcpy(Q + qL + tp1, Q2, tp2 * sizeof (Query));
+	solve(qL, qL + tp1 - 1, L, mid);
+	solve(qL + tp1, qR, mid + 1, R);
+}
+
+int main() {
+	while (~scanf("%d%d", &n, &m)) {
+		for (int i = 1; i <= n; ++i) {
+			scanf("%d", &Q[i].x);
+			Q[i].type = 1, Q[i].y = 1;
+			Q[i].id = i;
+		}
+		for (int i = 1; i <= m; ++i) {
+			scanf("%d%d%d", &Q[n + i].x, &Q[n + i].y, &Q[n + i].k);
+			Q[n + i].type = 2, Q[n + i].id = i;
+		}
+		solve(1, n + m, -inf, inf);
+		for (int i = 1; i <= m; ++i) {
+			printf("%d\n", ans[i]);
+		}
+	}
+	return 0;
+}
+\end{lstlisting}
+\subsection{[BZOJ 3110 第$k$大数]}
+$n\leq 50000$个位置，$m\leq 50000$个操作。操作有两种:
+\begin{itemize}
+\item $1\ a\ b\ c$的形式表示在第$a$个位置到第$b$个位置，每个位置加入一个数$c(abs(c)\leq n)$
+\item $2\ a\ b\ c$形式，表示询问从第$a$个位置到第$b$个位置，第$c(c\leq Maxlongint)$大的数是多少?(同一位置可能有多个数)
+\end{itemize}
+
+整体二分，对左区间操作1中的$c\leq mid$进行区间每个数都加1，统计数字个数。然后对于右区间的每个操作2进行区间查询数字个数。比较划分。
+
+\begin{lstlisting}
+typedef long long ll;
+const int MAX_N = 50010;
+
+int n, m;
+ll B[MAX_N], C[MAX_N];
+
+struct Query {
+	int id, type, a, b, ans;
+	ll c;
+	bool operator < (const Query& rhs) const {
+		return id < rhs.id;
+	}
+} ques[MAX_N], newq1[MAX_N], newq2[MAX_N];
+
+inline int lowbit(int x) { return x & -x; }
+
+ll query(int x) {
+	ll ret1 = 0, ret2 = 0;
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		ret1 += C[i], ret2 += B[i];
+	}
+	return ret1 * (x + 1) - ret2;
+}
+
+void update(int x, int value) {
+	for (int i = x; i <= n; i += lowbit(i)) {
+		C[i] += value, B[i] += value * x;
+	}
+}
+
+void solve(int qL, int qR, int left, int right) {
+	if (qL > qR) return;
+	if (left == right) {
+		for (int i = qL; i <= qR; ++i) {
+			if (ques[i].type == 2) ques[i].ans = left;
+		}
+		return;
+	}
+	int mid = (left + right) >> 1;	
+	int tp1 = 0, tp2 = 0;
+	for (int i = qL; i <= qR; ++i) {
+		int L = ques[i].a, R = ques[i].b;
+		if (ques[i].type == 1) {
+			if (ques[i].c <= mid) newq1[tp1++] = ques[i];
+			else {
+				update(L, 1);
+				update(R + 1, -1);
+				newq2[tp2++] = ques[i];
+			}
+		} else {
+			ll cnt = query(R) - query(L - 1);
+			if (cnt < ques[i].c) {
+				ques[i].c -= cnt;
+				newq1[tp1++] = ques[i];
+			} else {
+				newq2[tp2++] = ques[i];
+			}
+		}
+	}
+	for (int i = 0; i < tp2; ++i) {
+		if (newq2[i].type == 1) {
+			update(newq2[i].a, -1);
+			update(newq2[i].b + 1, 1);
+		}
+	}
+	memcpy(ques + qL, newq1, tp1 * sizeof (Query));
+	memcpy(ques + qL + tp1, newq2, tp2 * sizeof (Query));
+	solve(qL, qL + tp1 - 1, left, mid);
+	solve(qL + tp1, qR, mid + 1, right);
+}
+
+int main() {
+	scanf("%d%d", &n, &m);
+	for (int i = 1; i <= m; ++i) {
+		scanf("%d%d%d%lld", &ques[i].type, &ques[i].a, &ques[i].b, &ques[i].c);
+		ques[i].id = i;
+	}
+	solve(1, m, -n, n);
+	sort(ques, ques + m + 1);
+	for (int i = 1; i <= m; ++i) {
+		if (ques[i].type == 2) {
+			printf("%d\n", ques[i].ans);
+		}
+	}
+    return 0;
+}
+\end{lstlisting}
+
+\clearpage
+\section{cdq分治(时间分治)}
+
+cdq分治算法的核心在于：去掉时间的限制，将所有查询要求发生的时刻同化，化动态修改为静态查询。对于某些问题来说可以把某一维的限制通过排序看作时间限制然后运用cdq分治。解决三维偏序问题一般要第一维排序，第二维cdq分治，第三位借用数据结构：树状数组，线段树，平衡树等。\\
+1.使用CDQ分治的前提
+\begin{itemize}
+\item 修改操作对询问的贡献独立，修改操作互不影响
+\item 允许使用离线算法
+\end{itemize}
+2.一般步骤
+\begin{itemize}
+\item 将整个操作序列分为两个长度相等的部分【分】
+\item 递归处理前一部分的子问题 【治1】
+\item 计算前一部分的子问题中的修改操作对后一部分子问题的影响 【治2】
+\item 递归处理后一部分子问题 【治3】
+\end{itemize}
+3.分治的复杂度（$k$是一个和$n$无关的多项式）
+\begin{itemize}
+\item $T(n)=2T(\frac{n}{2})+O(kn) \rightarrow T(n)=O(kn \log n)$
+\item $T(n)=2T(\frac{n}{2})+O(kn\log n)\rightarrow T(n)=O(kn\log^{2} n)$
+\item $T(n)=2T(\frac{n}{2})+O(k)\rightarrow T(n)=O(kn)$
+\end{itemize}
+\subsection{[NEU 1702 三维逆序对]}
+定义点$i\leq j$当且仅当$x_{i}\leq x_{j},y_{i}\leq y_{j},z_{i}\leq z_{j}$。给$n\leq 10^5$个点，对每个点求出小于等于它的点的数量。
+
+\begin{lstlisting}
+const int MAX_N = 100010;
+
+int T, n, MaxZ;
+int bit[MAX_N], same[MAX_N], ans[MAX_N], Z[MAX_N];
+
+struct Point {
+	int x, y, z, id;
+
+	bool operator == (const Point& rhs) const {
+		return x == rhs.x && y == rhs.y && z == rhs.z;
+	}
+} P[MAX_N], Q[MAX_N];
+
+bool xyz(Point a, Point b) {
+	if (a.x != b.x) return a.x < b.x;
+	if (a.y != b.y) return a.y < b.y;
+	return a.z < b.z;
+}
+
+bool yzx(Point a, Point b) {
+	if (a.y != b.y) return a.y < b.y;
+	if (a.z != b.z) return a.z < b.z;
+	return a.x < b.x;
+}
+
+inline int lowbit(int x) { return x & (-x); }
+
+void update(int x, int value) {
+	for (int i = x; i <= MaxZ; i += lowbit(i)) {
+		bit[i] += value;
+	}
+}
+
+int query(int x) {
+	int ret = 0;
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		ret += bit[i];
+	}
+	return ret;
+}
+
+void cdq(int left, int right) {
+	if (left == right) return;
+	int mid = (left + right) >> 1, xmid = P[mid].x;
+	cdq(left, mid);
+	int total = 0;
+	for (int i = left; i <= right; ++i) {
+		Q[total++] = P[i];
+	}
+	sort(Q, Q + total, yzx);
+	for (int i = 0; i < total; ++i) {
+		if (Q[i].x <= xmid) update(Q[i].z, 1);
+		else {
+			ans[Q[i].id] += query(Q[i].z);
+		}
+	}
+	for (int i = 0; i < total; ++i) {
+		if (Q[i].x <= xmid) update(Q[i].z, -1);
+	}
+	cdq(mid + 1, right);
+}
+
+int main() {
+	scanf("%d", &T);
+	while (T--) {
+		scanf("%d", &n);
+		for (int i = 0; i < n; ++i) {
+			scanf("%d%d%d", &P[i].x, &P[i].y, &P[i].z);
+			P[i].id = i, Z[i] = P[i].z;
+		}
+		sort(Z, Z + n);
+		MaxZ = unique(Z, Z + n) - Z;
+		for (int i = 0; i < n; ++i) {
+			P[i].z = lower_bound(Z, Z + MaxZ, P[i].z) - Z + 1;
+		}
+		sort(P, P + n, xyz);
+		for (int i = 0, j = 0; i < n; ) {
+			while (j < n && P[i] == P[j]) ++j;
+			while (i < j) {
+				same[P[i].id] = P[j - 1].id;
+				++i;
+			}
+		}
+		for (int i = 0; i < n; ++i) {
+			P[i].x = i; // 这一步是必须的
+		}
+		for (int i = 0; i <= MaxZ; ++i) { bit[i] = 0; }
+		for (int i = 0; i < n; ++i) { ans[i] = 0; }
+		cdq(0, n - 1);
+		for (int i = 0; i < n; ++i) {
+			printf("%d\n", ans[same[i]]);
+		}
+	}
+	return 0;
+}
+\end{lstlisting}
+\subsection{[UVALive 6776 三维LIS]}
+定义两个点$i$和$j$,如果满足$x_i<x_j,y_i<y_j,z_i<z_j$，那么称：$i<j$，给$n\leq 3*10^{5}$个点计算LIS。 \\
+
+先把所有点的$Z$坐标离散化，然后按照$XYZ$的优先级排序，考虑cdq分治。对于区间$[left,right]$内的点再按照$YZX$的优先级排序，记录下$mid+1$的横坐标，需要特殊处理，借用两棵树状数组。
+
+\begin{lstlisting}
+const int MAX_N = 300010;
+
+int n, MaxZ;
+int bit[2][MAX_N], dp[MAX_N], Z[MAX_N];
+
+struct Point {
+	int x, y, z, id;
+} P[MAX_N], Q[MAX_N];
+
+bool xyz(Point a, Point b) {
+	if (a.x != b.x) return a.x < b.x;
+	if (a.y != b.y) return a.y < b.y;
+	return a.z < b.z;
+}
+
+bool yzx(Point a, Point b) {
+	if (a.y != b.y) return a.y < b.y;
+	if (a.z != b.z) return a.z > b.z;
+	return a.x > b.x;
+}
+
+inline int lowbit(int x) { return x & (-x); }
+
+inline void update(int id, int x, int value) {
+	for (int i = x; i <= MaxZ; i += lowbit(i)) {
+		bit[id][i] = max(bit[id][i], value);
+	}
+}
+
+inline int query(int id, int x) {
+	int ret = 0;
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		ret = max(ret, bit[id][i]);
+	}
+	return ret;
+}
+
+void Clear(int id, int x) {
+	for (int i = x; i <= MaxZ; i += lowbit(i)) {
+		bit[id][i] = 0;
+	}
+}
+
+void cdq(int left, int right) {
+	if (left == right) return;
+	int mid = (left + right) >> 1, midX = P[mid + 1].x;
+	cdq(left, mid);
+	int total = 0;
+	for (int i = left; i <= right; ++i) {
+		Q[total] = P[i];
+		Q[total++].id = i; // 重新编号，以便下面的比较插入和查询
+	}
+	sort(Q, Q + total, yzx);
+	for (int i = 0; i < total; ++i) {
+		int pos = Q[i].id, tmp;
+		if (pos <= mid) {
+			update(0, Q[i].z, dp[pos]);
+			if (Q[i].x != midX) update(1, Q[i].z, dp[pos]); // 单独建树
+		} else {
+			if (Q[i].x != midX) tmp = query(0, Q[i].z - 1);
+			else tmp = query(1, Q[i].z - 1);
+			dp[pos] = max(dp[pos], tmp + 1);
+		}
+	}
+	for (int i = 0; i < total; ++i) {
+		int pos = Q[i].id;
+		if (pos <= mid) { // 清空树状数组
+			Clear(0, Q[i].z);
+			if (Q[i].x != midX) Clear(1, Q[i].z);
+		}
+	}
+	cdq(mid + 1, right);
+}
+
+int main() {
+	scanf("%d", &n);
+	for (int i = 0; i < n; ++i) {
+		scanf("%d%d%d", &P[i].x, &P[i].y, &P[i].z);
+		dp[i] = 1, P[i].id = i;
+		Z[i] = P[i].z;
+	}
+	sort(Z, Z + n);
+	MaxZ = unique(Z, Z + n) - Z;
+	for (int i = 0; i < n; ++i) {
+		P[i].z = lower_bound(Z, Z + MaxZ, P[i].z) - Z + 1;
+	}
+	sort(P, P + n, xyz);
+	for (int i = 0; i <= MaxZ; ++i) { bit[0][i] = bit[1][i] = 0; }
+	cdq(0, n - 1);
+	int ans = 0;
+	for (int i = 0; i < n; ++i) {
+		ans = max(ans, dp[i]);
+	}
+	printf("%d\n", ans);
+	return 0;
+}
+\end{lstlisting}
+\subsection{[BZOJ 3295 动态逆序对]}
+$n\leq 10^5$个元素依次删除$m\leq 5*10^4 $个元素，每个元素属于$1\sim n$中间的正整数，求删除元素之前序列有多少个逆序对。\\
+
+首先把删除看成逆序插入。定义$x$表示插入时间，$y$表示在数组中的初始位置，$z$表示元素值的大小，每对逆序对即是三维偏序关系。如果最外层按照$y$排序，对于每个区间$[left,right]$都是可以保证$y$单调递增，然后利用$x$和$mid$的大小关系划分区间。此时在区间$[left,mid]$和$[mid+1,right]$内部都是可以保证$y$单调递增并且子区间$[mid+1,right]$的每一个$x$都是比左区间的每一个$x$大的考虑利用左子区间更新右子区间。
+\begin{itemize}
+\item 左边数值大的造成的逆序对
+\end{itemize}
+因为此时子区间内部都是$y$单调递增的，所以可以根据枚举的右子区间$i:mid+1\sim right$的$y$大小来确定是否将左子区间的元素的$z$信息插入树状数组，此时完全不用管$x$信息，因为右子区间的每个元素的$x$都比左子区间的每个元素的$x$都大。在查询的时候，可以查比当前$i$的$z$小的个数，然后用插入的$z$的总个数减一下，就得到$z$大的元素个数了。第一阶段处理完了，需要根据插入“清空”树状数组信息。
+\begin{itemize}
+\item 右边数小造成的逆序对
+\end{itemize}
+遍历右子区间$i:right\sim mid+1$，将左子区间的$z$也从后往前插入树状数组，这样子可以保证左子区间$y$大的都插进了树状数组，正常查询即可。\\
+时间复杂度：$O(n\log n)$
+\begin{lstlisting}
+const int MAX_N = 100010;
+
+int n, m;
+int bit[MAX_N], vis[MAX_N], pos[MAX_N];
+ll ans[MAX_N];
+
+struct Node {
+	int x, y, z;
+} P[MAX_N], Q[MAX_N];
+
+inline int lowbit(int x) { return x & -x; }
+
+void update(int x, int value) {
+	for (int i = x; i <= n; i += lowbit(i)) {
+		bit[i] += value;
+	}
+}
+
+int query(int x) {
+	int ret = 0;
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		ret += bit[i];
+	}
+	return ret;
+}
+
+void cdq(int left, int right) {
+	if (left >= right) return;
+	int mid = (left + right) >> 1;
+	int tp1 = left, tp2 = mid + 1;
+	for (int i = left; i <= right; ++i) {
+		if (P[i].x <= mid) Q[tp1++] = P[i];
+		else Q[tp2++] = P[i];
+	}
+	tp1 = left;
+	for (int i = mid + 1; i <= right; ++i) {
+		while (tp1 <= mid && Q[tp1].y < Q[i].y) {
+			update(Q[tp1].z, 1);
+			tp1++;
+		}	
+		ans[Q[i].x] += (tp1 - left) - query(Q[i].z - 1);
+	}
+	for (int i = left; i < tp1; ++i) update(Q[i].z, -1);
+	
+	tp1 = mid;
+	for (int i = right; i >= mid + 1; --i) {
+		while (tp1 >= left && Q[tp1].y > Q[i].y) {
+			update(Q[tp1].z, 1);
+			tp1--;
+		}
+		ans[Q[i].x] += query(Q[i].z - 1);
+	}
+	for (int i = mid; i > tp1; --i) update(Q[i].z, -1);
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof(Node));
+	cdq(left, mid);
+	cdq(mid + 1, right);
+}
+
+int main() {
+	scanf("%d%d", &n, &m);
+	for (int i = 1; i <= n; ++i) {
+		scanf("%d", &P[i].z);
+		P[i].x = 0, P[i].y = i, pos[P[i].z] = i;
+	}
+	int sz = n, t;
+	for (int i = 1; i <= m; ++i) {
+		scanf("%d", &t);
+		vis[t] = 1;
+		P[pos[t]].x = sz--;
+	}
+	for (int i = 1; i <= n; ++i) {
+		if (vis[i]) continue;
+		P[pos[i]].x = sz--;
+	}
+	cdq(1, n);
+	for (int i = 1; i <= n; ++i) ans[i] += ans[i - 1];
+	for (int i = n; i > n - m; --i) {
+		printf("%lld\n", ans[i]);
+	}
+	return 0;
+}
+\end{lstlisting}
+\subsection{[BZOJ 2244 导弹拦截]}
+拦截系统的工作方式：虽然它的第一发炮弹能够到达任意的高度、并且能够拦截任意速度的导弹，但是以后每一发炮弹都不能高于前一发的高度，其拦截的导弹的飞行速度也不能大于前一发。给出$n\leq 5*10^4$枚导弹的高度和速度，求每枚导弹被拦截到的概率。\\
+
+实际上就是求每个元素是三维LIS上结点的概率。方案数可能很大，需要用double存。正反搞两次cdq分别求出以第$i$个元素结尾前半部分的LIS和以第$i$个元素起始后半部分的LIS，利用BIT更新最大长度和方案数。
+\begin{lstlisting}
+const int MAX_N = 50010;
+
+int n, Max, m;
+int Y[MAX_N], Z[MAX_N], sta[MAX_N];
+double way[MAX_N];
+
+struct Point {
+	int x, y, z, id;
+	bool operator < (const Point& rhs) const {
+		if (y != rhs.y) return y < rhs.y;
+		if (z != rhs.z) return z < rhs.z;
+		return x < rhs.x;
+	}
+} P[MAX_N], Q[MAX_N];
+
+struct Ans {
+	int dp[2]; // dp[0]: 以 i 结尾前半部分的 LIS
+	// dp[1]: 以 i 起始后半部分的 LIS
+	double way[2]; // way[]: 分别是方案数
+} ans[MAX_N];
+
+struct Bit {
+	int len;
+	double sum;
+
+	Bit() {}
+	Bit(int _len, double _sum): len(_len), sum(_sum) {}
+} bit[MAX_N];
+
+inline int lowbit(int x) { return x & -x; }
+
+void update(int x, int len, double sum) {
+	for (int i = x; i <= Max; i += lowbit(i)) {
+		if (len > bit[i].len) {
+			if (bit[i].len == 0) sta[m++] = i;
+			bit[i] = Bit(len, sum);
+		} else if (len == bit[i].len) bit[i].sum += sum;
+	}
+}
+
+Bit query(int x) {
+	Bit ret = Bit(0, 0);
+	for (int i = x; i > 0; i -= lowbit(i)) {
+		if (bit[i].len > ret.len) ret = Bit(bit[i].len, bit[i].sum);
+		else if (bit[i].len == ret.len) ret.sum += bit[i].sum;
+	}
+	return ret;
+}
+
+void Clear(int x) {
+	for (int i = x; i <= Max; i += lowbit(i)) {
+		bit[i] = Bit(0, 0);
+	}
+}
+
+void cdq(int left, int right, int cur) {
+	if (left == right) return;
+	int mid = (left + right) >> 1;
+	int tp1 = left, tp2 = mid + 1;
+	for (int i = left; i <= right; ++i) {
+		if (P[i].x <= mid) Q[tp1++] = P[i];
+		else Q[tp2++] = P[i];
+	}
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof (Point));
+	cdq(left, mid, cur);
+	tp1 = left;
+	m = 0;
+	for (int i = mid + 1; i <= right; ++i) {
+		while (tp1 <= mid && Q[tp1].y <= Q[i].y) {
+			update(Q[tp1].z, ans[Q[tp1].id].dp[cur], ans[Q[tp1].id].way[cur]);
+			tp1++;
+		}
+		int pos = Q[i].id;
+		Bit tmp = query(Q[i].z);
+		if (tmp.len + 1 > ans[pos].dp[cur]) {
+			ans[pos].dp[cur] = tmp.len + 1;
+			ans[pos].way[cur] = tmp.sum;
+		} else if (tmp.len + 1 == ans[pos].dp[cur]) {
+			ans[pos].way[cur] += tmp.sum;
+		}
+	}
+	for (int i = tp1 - 1; i >= left; --i) {
+		Clear(Q[i].z);
+	}
+	cdq(mid + 1, right, cur);
+	
+	tp1 = left, tp2 = mid + 1;
+	for (int i = left; i <= right; ++i) {
+		if (tp1 <= mid && (tp2 > right ||
+			P[tp1] < P[tp2])) Q[i] = P[tp1++];
+	   	else Q[i] = P[tp2++];	
+	}
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof (Point));
+	
+}
+
+void solve() {
+	sort(Z, Z + n); sort(Y, Y + n);
+	Max = unique(Z, Z + n) - Z;
+	int tot = unique(Y, Y + n) - Y;
+	for (int i = 1; i <= n; ++i) {
+		P[i].y = lower_bound(Y, Y + tot, P[i].y) - Y;
+		P[i].z = lower_bound(Z, Z + Max, P[i].z) - Z;
+		P[i].y = tot - P[i].y, P[i].z = Max - P[i].z;
+	}
+	sort(P + 1, P + n + 1); // yzx
+	cdq(1, n, 0);
+	for (int i = 1; i <= n; ++i) {
+		P[i].x = n - P[i].x + 1;
+		P[i].y = tot - P[i].y + 1;
+		P[i].z = Max - P[i].z + 1;
+	}
+	sort(P + 1, P + n + 1); // yzx
+	cdq(1, n, 1);
+	int len = 0;
+	double sum = 0;
+	for (int i = 1; i <= n; ++i) {
+		if (len < ans[i].dp[0]) {
+			len = ans[i].dp[0];
+			sum = ans[i].way[0];
+		} else if (len == ans[i].dp[0]) {
+			sum += ans[i].way[0];
+		}
+	}
+	printf("%d\n", len);
+	for (int i = 1; i <= n; ++i) {
+		if (i > 1) printf(" ");
+		int tmp = ans[i].dp[0] + ans[i].dp[1] - 1;
+		if (tmp < len) printf("0");
+		else printf("%.5lf", ans[i].way[0] * ans[i].way[1] / sum);
+	}
+	printf("\n");
+}
+
+int main() {
+	scanf("%d", &n);
+	for (int i = 1; i <= n; ++i) {
+		scanf("%d%d", &P[i].y, &P[i].z);
+		P[i].x = P[i].id = i;
+		Y[i - 1] = P[i].y, Z[i - 1] = P[i].z;
+		ans[i].dp[0] = ans[i].dp[1] = 1;
+		ans[i].way[0] = ans[i].way[1] = 1;
+	}
+	solve();
+	return 0;
+}
+\end{lstlisting}
+\subsection{[BZOJ 1176 Mokia]}
+一个$W*W$的棋盘，每个格子内有一个数，初始时全部为0，现在要求维护两种操作：
+\begin{itemize}
+\item $1\ x\ y\ z$将格子$(x,y)$内的数加上$z$
+\item $2\ x_1\ y_1\ x_2\ y_2$询问矩阵$(x_1,y_1,x_2,y_2)$内所有格子的数的和。
+\end{itemize}
+操作1$\leq 160000$，操作2$\leq 10000$，$1\leq W\leq 2*10^6$。\\
+
+对于询问矩阵$(x_1,y_1,x_2,y_2)$，根据容斥需要添加三个询问$(x_1-1,y_1-1),(x_2,y_1-1),(x_1-1,y_2)$，和每个询问的符号$flag$,属于哪个询问，每次查询时将答案连同符号累加到所属询问里。\\
+离散化后，建立三维偏序：$x_0 < x_1,y_0 < y_1,id_0 < id_1$，需要把所有$< id$的值都加进树状数组，第一维按照优先$x$其次$y$排序，第二维根据$id$进行$cdq$分治，第三维按照$y$插入树状数组并统计。
+\begin{lstlisting}
+const int MAX_N = 200100;
+
+int S, W, n = 0, Max;
+int X[MAX_N], Y[MAX_N];
+ll bit[MAX_N];
+
+struct Query {
+    int x, y, flag, value;
+    int id, be;
+    ll ans;
+
+    Query() {}
+    Query(int _x, int _y, int _flag, int _id, int _be, ll _ans):
+        x(_x), y(_y), flag(_flag), id(_id), be(_be), ans(_ans) {}
+    bool operator < (const Query& rhs) const {
+        if (x != rhs.x) return x < rhs.x;
+        if (y != rhs.y) return y < rhs.y;
+        return id < rhs.id;
+    }
+} ques[MAX_N], newq[MAX_N];
+
+inline int lowbit(int x) { return x & -x; }
+
+void update(int x, int value) {
+    for (int i = x; i <= Max; i += lowbit(i)) {
+        bit[i] += value;
+    }
+}
+
+ll query(int x) {
+    ll ret = 0;
+    for (int i = x; i > 0; i -= lowbit(i)) {
+        ret += bit[i];
+    }
+    return ret;
+}
+
+void cdq(int left, int right) {
+    if (left == right) return;
+    int mid = (left + right) >> 1;
+    int tp1 = left, tp2 = mid + 1;
+    for (int i = left; i <= right; ++i) {
+        if (ques[i].id <= mid) newq[tp1++] = ques[i];
+        else newq[tp2++] = ques[i];
+    }
+    memcpy(ques + left, newq + left, (right - left + 1) * sizeof (Query));
+    cdq(left, mid);
+    tp1 = left;
+    for (int i = mid + 1; i <= right; ++i) {
+        if (ques[i].flag != 0) { // not change operation
+            while (tp1 <= mid && ques[tp1].x <= ques[i].x){
+                if (ques[tp1].flag == 0) { // change operation
+                    update(ques[tp1].y, ques[tp1].value);
+                }
+                tp1++;
+            }
+        }
+        ques[i].ans += query(ques[i].y);
+    }
+    for (int i = tp1 - 1; i >= left; --i) {
+        if (ques[i].flag ==0) {
+            update(ques[i].y, -ques[i].value);
+        }
+    }
+    cdq(mid + 1, right);
+    tp1 = left, tp2 = mid + 1;
+    for (int i = left; i <= right; ++i) {
+        if (tp1 <= mid && (tp2 > right ||
+            ques[tp1] < ques[tp2]))
+            newq[i] = ques[tp1++];
+        else newq[i] = ques[tp2++];
+    }
+    memcpy(ques + left, newq + left, (right - left + 1) * sizeof (Query));
+}
+
+bool cmp(const Query& a, const Query& b) {
+    return a.id < b.id;
+}
+
+int main() {
+    scanf("%d%d", &S, &W); // S 无关紧要
+    int tot1 = 0, tot2 = 0, type;
+    while (1) {
+        scanf("%d", &type);
+        if (type == 3) break;
+        ++n;
+        if (type == 1) {
+            scanf("%d%d%d", &ques[n].x, &ques[n].y, &ques[n].value);
+            ques[n].flag = 0, ques[n].id = n;
+            X[tot1++] = ques[n].x, Y[tot2++] = ques[n].y;
+        } else {
+            int x1, y1, x2, y2;
+            scanf("%d%d%d%d", &x1, &y1, &x2, &y2);
+            ques[n] = Query(x1 - 1, y1 - 1, 1, n, n + 3, 0);
+            ques[n + 1] = Query(x2, y1 - 1, -1, n + 1, n + 3, 0);
+            ques[n + 2] = Query(x1 - 1, y2, -1, n + 2, n + 3, 0);
+            ques[n + 3] = Query(x2, y2, 2, n + 3, n + 3, 0);
+            n += 3;
+            X[tot1++] = x2, X[tot1++] = x1 - 1;
+            Y[tot2++] = y2, Y[tot2++] = y1 - 1;
+        }
+    }
+    sort(X, X + tot1); sort(Y, Y + tot2);
+    tot1 = unique(X, X + tot1) - X;
+    tot2 = unique(Y, Y + tot2) - Y;
+    for (int i = 1; i <= n; ++i) {
+        ques[i].x = lower_bound(X, X + tot1, ques[i].x) - X + 1;
+        ques[i].y = lower_bound(Y, Y + tot2, ques[i].y) - Y + 1;
+    }
+    sort(ques + 1, ques + n + 1);
+    Max = tot2;
+    cdq(1, n);
+    sort(ques + 1, ques + n + 1, cmp);
+    for (int i = 1; i <= n; ++i) {
+        if (ques[i].flag == 0) continue;
+        if (ques[i].flag == 2) {
+            printf("%lld\n", ques[i].ans);
+        } else {
+            int be = ques[i].be;
+            ques[be].ans += ques[i].ans * ques[i].flag;
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+\subsection{[BZOJ 1429 货币兑换Cash]}
+给出$n\leq 100000$天每天A和B两个股票的单价$a_i$和$b_i$（买入和卖出价格），购买时A和B两个股票的购买比例$rate$，初始时有$S$元，求$n$天后的最大获利量？\\
+
+用$dp[i]$表示第$i$天可以的最大获利量，$x_i,y_i$分别表示用当天的最大获利量可以获得的A和B两个股票的数量。
+$$
+\begin{aligned}
+dp[i]&=x_i*a_i+y_i*b_i \\
+\frac{x_i}{y_i}&=rate_i
+\end{aligned}
+$$
+可以解出对应的$x_i$和$y_i$。考虑$dp$状态转移方程：
+$$
+dp[i]=max(x_j*a_i+y_j*b_i)\quad (j < i)
+$$
+转化成斜率，$k$决策优于$j$决策，不妨设$x_k < x_j$有：
+$$
+x_k*a_i+y_k*b_i > x_j*a_i+y_j*b_i\quad (x_k > x_j) \rightarrow
+k_i=-\frac{a_i}{b_i} > \frac{y_k-y_j}{x_k-x_j}
+$$
+因此需要以$x_k$为关键字维护一个凸线，维护一个点集$(x_k,y_k)$，$x_k$是单调递增的，相邻两点的斜率是单调递减的，相当于一个上凸壳。用左半区间已经更新好的$dp$值求出上凸壳点集，然后用右半区的斜率去切左半区的点集更新$dp$值。左半区间只需要点集$(x,y)$，右半区间只需要斜率$k_i=-\frac{a_i}{b_i}$。处理好左半边时需要保证点集按照坐标排好序，处理右半边时需要保证询问按照斜率排好序，相当于用一系列连续变化的直线去切一些连续点组成的凸壳。
+
+\begin{lstlisting}
+const int MAX_N = 100100;
+const double eps = 1e-9;
+const double inf = 1e18;
+
+int n, S;
+int sta[MAX_N];
+double ans[MAX_N];
+
+struct Query {
+	int id;
+	double a, b, rate, k;
+	double x, y;
+	
+	// 按照斜率 k 从大到小排序
+	bool operator < (const Query& rhs) const {
+		return k > rhs.k;
+	}
+} Q[MAX_N], P[MAX_N];
+
+double slope(int i, int j) {
+	if (j == 0) return -inf;
+	if (fabs(P[i].x - P[j].x) <= eps) return inf;
+	return (P[i].y - P[j].y) / (P[i].x - P[j].x);
+}
+
+void cdq(int left, int right) {
+	if (left == right) {
+		ans[left] = max(ans[left], ans[left - 1]);
+		P[left].x = ans[left] * P[left].rate / (P[left].a * P[left].rate + P[left].b);
+		P[left].y = P[left].x / P[left].rate;
+		return ;
+	}
+	int mid = (left + right) >> 1;
+	int tp1 = left, tp2 = mid + 1;
+	// 按照 id 划分区间
+	for (int i = left; i <= right; ++i) {
+		if (P[i].id <= mid) Q[tp1++] = P[i];
+		else Q[tp2++] = P[i];
+	}
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof (Query));
+	int top = 0;
+	cdq(left, mid); // 递归处理左区间
+	
+	// 从左区间获得上凸壳,此时已经保证左区间点集按照坐标排好序
+	for (int i = left; i <= mid; ++i) {
+		while (top  > 1 && slope(sta[top], sta[top - 1])
+                        <= slope(i, sta[top - 1]) + eps) --top;
+		sta[++top] = i;
+	}
+	sta[++top] = 0; // 添加边界
+	
+	// 用左区间的凸壳更新右区间，右区间保证斜率从大到小排序
+	for (int i = mid + 1, st = 1; i <= right; ++i) {
+		while (st < top && P[i].k - slope(sta[st], sta[st + 1]) <= eps) ++st;
+		int id =  P[i].id;
+		ans[id] = max(ans[id], P[sta[st]].x * P[i].a + P[sta[st]].y * P[i].b);
+	}
+	cdq(mid + 1, right);
+
+	// 把当前区间 [left, right] 点集按坐标排序
+	tp1 = left, tp2 = mid + 1;
+	for (int i = left; i <= right; ++i) {
+		if (tp1 <= mid && (tp2 > right
+			|| P[tp1].x < P[tp2].x
+			|| (fabs(P[tp1].x - P[tp2].x) <= eps && P[tp1].y < P[tp2].y))) Q[i] = P[tp1++];
+		else Q[i] = P[tp2++];
+	}
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof (Query));
+}
+
+int main() {
+	scanf("%d%d", &n, &S);
+	ans[0] = S;
+	for (int i = 1; i <= n; ++i) {
+		scanf("%lf%lf%lf", &P[i].a, &P[i].b, &P[i].rate);
+		P[i].k = -P[i].a / P[i].b, P[i].id = i;
+		ans[i] = 0;
+	}
+	sort(P + 1, P + n + 1);
+	cdq(1, n);
+	printf("%.3lf\n", ans[n]);
+	return 0;
+}
+\end{lstlisting}
+\subsection{[BZOJ 2961 共点圆]}
+有$n\leq 5*10^5$次操作：
+\begin{itemize}
+\item $0\ x\ y$表示在坐标系中加入一个以$(x, y)$为圆心且过原点的圆
+\item $1\ x\ y$表示询问点$(x,y)$是否在所有已加入的圆的内部（含圆周）
+\end{itemize}
+对于每次询问输出$Yes$或者$No$，输入保证圆心严格在x轴上方（纵坐标为正），且横坐标非零。\\
+
+一个点$(x_0,y_0)$处于圆心$(x,y)$且过原点的圆内部等价于
+$$
+(x_0-x)^2+(y_0-y)^2\leq x^2+y^2 \\
+2x_0x+2y_{0}y\geq x_{0}^2+y_{0}^2
+$$
+也就是符合条件的圆心必须位于半平面$2x_0x+2y_0y\geq x_{0}^2+y_{0}^2$内部。当$y_{0}>0$时，可得$y\geq -\frac{x_0}{y_0}*x+\frac{x_{0}^2+y_{0}^2}{y_0}$。不妨考虑求出在与半平面垂直的方向上的投影最小的点，如果这个点也在半平面内那么必然所有的点都在半平面内，只有凸包上的点才会是想要求的点。因此当$y_0>0$时，对所有的圆心求一个下凸包，然后对于每个查询点找到在这个下凸包上面斜率最接近$-\frac{x_0}{y_0}$的圆，只要这个圆心满足条件则所有的圆心都满足条件。当$y_0 <  0$时需要维护上凸包。
+\begin{lstlisting}
+const int MAX_N = 500010;
+const double inf = 1e20;
+const double eps = 1e-9;
+
+int n;
+
+struct Point {
+	int type, id, flag;
+	double x, y, k;
+	
+	void input() {
+		scanf("%d%lf%lf", &type, &x, &y);
+	}
+	bool operator < (const Point& rhs) const {
+		return k < rhs.k;
+	}
+	double dis(const Point& rhs) const {
+		return hypot(x - rhs.x, y - rhs.y);
+	}
+} P[MAX_N], Q[MAX_N], below[MAX_N], above[MAX_N];
+
+inline double slope(Point a, Point b) {
+	if (fabs(a.x - b.x) < eps) return inf;
+	else return (a.y - b.y) / (a.x - b.x);
+}
+
+void cdq(int left, int right) {
+	if (left == right) return;
+	int mid = (left + right) >> 1;
+	int tp1 = left, tp2 = mid + 1;
+	for (int i = left; i <= right; ++i) {
+		if (P[i].id <= mid) Q[tp1++] = P[i];
+		else Q[tp2++] = P[i];
+	}
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof (Point));
+	cdq(left, mid);
+	int tot1 = 0, tot2 = 0;
+	for (int i = left; i <= mid; ++i) {
+		if (P[i].type) continue;
+		while (tot1 > 1 && slope(above[tot1], above[tot1 - 1])
+                            < slope(P[i], above[tot1])) tot1--;
+		above[++tot1] = P[i];
+		while (tot2 > 1 && slope(below[tot2], below[tot2 - 1])
+                            > slope(P[i], below[tot2])) tot2--;
+		below[++tot2] = P[i];
+	}
+	int st1 = tot1, st2 = 1;
+	for (int i = mid + 1; i <= right; ++i) {
+		if (!P[i].type) continue;
+		if (P[i].y > 0) {
+			while (st2 < tot2 && slope(below[st2], below[st2 + 1]) < P[i].k) ++st2;
+			if (st2 <= tot2 && below[st2].dis(P[0]) < below[st2].dis(P[i])) P[i].flag = 0;
+		} else {
+			while (st1 > 1 && slope(above[st1], above[st1 - 1]) < P[i].k) --st1;
+			if (st1 >= 1 && above[st1].dis(P[0]) < above[st1].dis(P[i])) P[i].flag = 0;
+		}
+	}
+	cdq(mid + 1, right);
+	tp1 = left, tp2 = mid + 1;
+	for (int i = left; i <= right; ++i) {
+		if (tp1 <= mid && (tp2 > right
+			|| P[tp1].x < P[tp2].x
+			|| (fabs(P[tp1].x - P[tp2].x) <= eps && P[tp1].y < P[tp2].y)))
+			Q[i] = P[tp1++];
+		else Q[i] = P[tp2++];
+	}
+	memcpy(P + left, Q + left, (right - left + 1) * sizeof (Point));
+}
+
+bool cmp(Point a, Point b) {
+	return a.id < b.id;
+}
+
+int main() {
+	P[0].x = 0, P[0].y = 0;
+	scanf("%d", &n);
+	for (int i = 1; i <= n; ++i) {
+		P[i].input();
+		P[i].k = -P[i].x / P[i].y;
+		P[i].id = i, P[i].flag = 1;
+	}
+	sort(P + 1, P + n + 1);
+	cdq(1, n);
+	sort(P + 1, P + n + 1, cmp);
+	int first = 1; // 特殊处理询问之前没有圆的情况
+	for (int i = 1; i <= n; ++i) {
+		if (P[i].type) {
+			if (P[i].flag && !first) printf("Yes\n");
+			else printf("No\n");
+		} else if (first) first = 0;
+	}
+	return 0;
+}
+\end{lstlisting}
+
+%\end{document}

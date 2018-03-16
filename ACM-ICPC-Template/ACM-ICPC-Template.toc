@@ -1,0 +1,270 @@
+\contentsline {chapter}{\numberline {1}基础}{1}{chapter.1}
+\contentsline {section}{\numberline {1.1}常见错误}{1}{section.1.1}
+\contentsline {section}{\numberline {1.2}思考角度}{1}{section.1.2}
+\contentsline {section}{\numberline {1.3}奇巧淫技}{2}{section.1.3}
+\contentsline {subsection}{\numberline {1.3.1}memset初始化极大极小值和较大较小值}{2}{subsection.1.3.1}
+\contentsline {subsection}{\numberline {1.3.2}二进制中1的个数}{2}{subsection.1.3.2}
+\contentsline {subsection}{\numberline {1.3.3}vector去重}{2}{subsection.1.3.3}
+\contentsline {subsection}{\numberline {1.3.4}快速乘法}{2}{subsection.1.3.4}
+\contentsline {subsection}{\numberline {1.3.5}快速开方}{3}{subsection.1.3.5}
+\contentsline {subsection}{\numberline {1.3.6}高精度开根$a^{\frac {1}{b}}$}{3}{subsection.1.3.6}
+\contentsline {subsection}{\numberline {1.3.7}把所有点(向量)从第三象限开始逆时针排序}{3}{subsection.1.3.7}
+\contentsline {subsection}{\numberline {1.3.8}求长度为$n$的有序数组$a$中$k$的个数}{4}{subsection.1.3.8}
+\contentsline {subsection}{\numberline {1.3.9}C++关闭同步}{4}{subsection.1.3.9}
+\contentsline {subsection}{\numberline {1.3.10}cout浮点数控制精度输出}{4}{subsection.1.3.10}
+\contentsline {subsection}{\numberline {1.3.11}快读}{4}{subsection.1.3.11}
+\contentsline {section}{\numberline {1.4}结论}{5}{section.1.4}
+\contentsline {subsection}{\numberline {1.4.1}判断$n$个整数坐标能否构成正$n$边形}{5}{subsection.1.4.1}
+\contentsline {subsection}{\numberline {1.4.2}已知年月日计算星期几}{5}{subsection.1.4.2}
+\contentsline {subsection}{\numberline {1.4.3}方格染色}{5}{subsection.1.4.3}
+\contentsline {subsection}{\numberline {1.4.4}包含特定方格所有子矩阵面积和}{6}{subsection.1.4.4}
+\contentsline {subsection}{\numberline {1.4.5}$n$以内$gcd(a,b)=d$的无序对对数}{6}{subsection.1.4.5}
+\contentsline {subsection}{\numberline {1.4.6}$gcd({x}^{a}-1,{x}^{b}-1)=x^{gcd(a,b)}-1$}{6}{subsection.1.4.6}
+\contentsline {subsection}{\numberline {1.4.7}方阵快速幂}{6}{subsection.1.4.7}
+\contentsline {section}{\numberline {1.5}归并排序及利用归并排序求逆序对数}{7}{section.1.5}
+\contentsline {section}{\numberline {1.6}快排、利用快排查找第$k$大元素}{8}{section.1.6}
+\contentsline {section}{\numberline {1.7}矩阵快速幂}{10}{section.1.7}
+\contentsline {subsection}{\numberline {1.7.1}循环矩阵}{10}{subsection.1.7.1}
+\contentsline {section}{\numberline {1.8}高精度}{12}{section.1.8}
+\contentsline {subsection}{\numberline {1.8.1}利用FFT实现大数乘法}{19}{subsection.1.8.1}
+\contentsline {chapter}{\numberline {2}搜索}{21}{chapter.2}
+\contentsline {section}{\numberline {2.1}折半搜索}{21}{section.2.1}
+\contentsline {chapter}{\numberline {3}STL}{23}{chapter.3}
+\contentsline {section}{\numberline {3.1}bitset}{23}{section.3.1}
+\contentsline {subsection}{\numberline {3.1.1}用unsigned long值初始化bitset对象}{23}{subsection.3.1.1}
+\contentsline {subsection}{\numberline {3.1.2}用string对象初始化bitset对象}{23}{subsection.3.1.2}
+\contentsline {subsection}{\numberline {3.1.3}操作}{23}{subsection.3.1.3}
+\contentsline {subsection}{\numberline {3.1.4}测试}{24}{subsection.3.1.4}
+\contentsline {section}{\numberline {3.2}单调栈、单调队列}{25}{section.3.2}
+\contentsline {subsection}{\numberline {3.2.1}单调栈}{25}{subsection.3.2.1}
+\contentsline {subsection}{\numberline {3.2.2}单调队列}{26}{subsection.3.2.2}
+\contentsline {section}{\numberline {3.3}list}{27}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1}CF 350 E}{27}{subsection.3.3.1}
+\contentsline {chapter}{\numberline {4}计算几何}{29}{chapter.4}
+\contentsline {section}{\numberline {4.1}简单}{29}{section.4.1}
+\contentsline {subsection}{\numberline {4.1.1}定义}{29}{subsection.4.1.1}
+\contentsline {subsection}{\numberline {4.1.2}顺时针输出所有顶点}{31}{subsection.4.1.2}
+\contentsline {subsection}{\numberline {4.1.3}求半径R圆覆盖最多点数及由圆上两点和半径求圆心}{32}{subsection.4.1.3}
+\contentsline {subsection}{\numberline {4.1.4}计算两圆公共部分面积}{34}{subsection.4.1.4}
+\contentsline {subsection}{\numberline {4.1.5}判断两线段是否相交}{35}{subsection.4.1.5}
+\contentsline {subsection}{\numberline {4.1.6}判断点和多边形的关系}{37}{subsection.4.1.6}
+\contentsline {subsection}{\numberline {4.1.7}计算多边形的最小宽度}{38}{subsection.4.1.7}
+\contentsline {subsection}{\numberline {4.1.8}计算多边形的最长内直径}{39}{subsection.4.1.8}
+\contentsline {section}{\numberline {4.2}凸包}{43}{section.4.2}
+\contentsline {subsection}{\numberline {4.2.1}求凸包顶点:Graham扫描法}{43}{subsection.4.2.1}
+\contentsline {subsection}{\numberline {4.2.2}判断稳定凸包}{43}{subsection.4.2.2}
+\contentsline {subsection}{\numberline {4.2.3}凸包直径}{44}{subsection.4.2.3}
+\contentsline {subsection}{\numberline {4.2.4}凸包周长及面积}{45}{subsection.4.2.4}
+\contentsline {subsection}{\numberline {4.2.5}凸包最大三角形面积}{45}{subsection.4.2.5}
+\contentsline {subsection}{\numberline {4.2.6}凸包最大四边形面积}{46}{subsection.4.2.6}
+\contentsline {subsection}{\numberline {4.2.7}最小覆盖矩形面积}{46}{subsection.4.2.7}
+\contentsline {subsection}{\numberline {4.2.8}凸包最小外接平行四边形面积}{48}{subsection.4.2.8}
+\contentsline {subsection}{\numberline {4.2.9}两相离凸包最短距离}{49}{subsection.4.2.9}
+\contentsline {section}{\numberline {4.3}三维几何}{51}{section.4.3}
+\contentsline {subsection}{\numberline {4.3.1}任意四面体的外接球半径公式}{51}{subsection.4.3.1}
+\contentsline {subsection}{\numberline {4.3.2}定义}{51}{subsection.4.3.2}
+\contentsline {subsection}{\numberline {4.3.3}给定四个点，求四面体内切球球心和半径}{53}{subsection.4.3.3}
+\contentsline {subsection}{\numberline {4.3.4}给定四面体的六条边长求四面体体积}{54}{subsection.4.3.4}
+\contentsline {chapter}{\numberline {5}数论}{55}{chapter.5}
+\contentsline {section}{\numberline {5.1}一些理论}{55}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}大整数取模}{55}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {5.1.2}哥德巴赫猜想（$1+1$问题）}{55}{subsection.5.1.2}
+\contentsline {subsection}{\numberline {5.1.3}费马小定理}{55}{subsection.5.1.3}
+\contentsline {subsection}{\numberline {5.1.4}素数定理}{55}{subsection.5.1.4}
+\contentsline {subsection}{\numberline {5.1.5}算数基本定理}{55}{subsection.5.1.5}
+\contentsline {subsection}{\numberline {5.1.6}$ax+by=c$的任意整数解}{56}{subsection.5.1.6}
+\contentsline {subsection}{\numberline {5.1.7}$n$是$m$的倍数，$[1,n]$中和$m$互素数个数}{56}{subsection.5.1.7}
+\contentsline {subsection}{\numberline {5.1.8}$p$为奇素数，$1\sim (p - 1)$ 模$p$的逆元对应全部$1\sim (p-1)$中的所有数，既是单射也是满射}{56}{subsection.5.1.8}
+\contentsline {subsection}{\numberline {5.1.9}调和级数求和}{56}{subsection.5.1.9}
+\contentsline {subsection}{\numberline {5.1.10}如果$gcd(a,m)=1$,那么$gcd(a+k*m,m)=1,k\in Z$}{56}{subsection.5.1.10}
+\contentsline {subsection}{\numberline {5.1.11}指数降幂公式}{56}{subsection.5.1.11}
+\contentsline {section}{\numberline {5.2}素数筛}{57}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}区间素数筛}{57}{subsection.5.2.1}
+\contentsline {section}{\numberline {5.3}约数筛}{58}{section.5.3}
+\contentsline {subsection}{\numberline {5.3.1}51nod 1586}{59}{subsection.5.3.1}
+\contentsline {section}{\numberline {5.4}分解质因数}{59}{section.5.4}
+\contentsline {subsection}{\numberline {5.4.1}给定$n$求满足$a^p = n$的最大$p$}{60}{subsection.5.4.1}
+\contentsline {subsection}{\numberline {5.4.2}求满足$lcm(i, j) = n(1\leq i \leq j \leq n\leq 10^{14})$的$(i, j)$对数}{60}{subsection.5.4.2}
+\contentsline {section}{\numberline {5.5}逆元}{60}{section.5.5}
+\contentsline {subsection}{\numberline {5.5.1}介绍}{60}{subsection.5.5.1}
+\contentsline {subsection}{\numberline {5.5.2}模素数逆元连乘}{60}{subsection.5.5.2}
+\contentsline {section}{\numberline {5.6}欧拉函数}{61}{section.5.6}
+\contentsline {subsection}{\numberline {5.6.1}介绍}{61}{subsection.5.6.1}
+\contentsline {subsection}{\numberline {5.6.2}求单个数的欧拉函数}{61}{subsection.5.6.2}
+\contentsline {subsection}{\numberline {5.6.3}欧拉筛}{62}{subsection.5.6.3}
+\contentsline {section}{\numberline {5.7}扩展欧几里德}{63}{section.5.7}
+\contentsline {subsection}{\numberline {5.7.1}裴蜀定理}{63}{subsection.5.7.1}
+\contentsline {subsection}{\numberline {5.7.2}求解逆元$ax \equiv 1 (mod\ n)$的最小非负数解}{64}{subsection.5.7.2}
+\contentsline {subsection}{\numberline {5.7.3}求所有解中$C = |x| + |y|$最小值}{64}{subsection.5.7.3}
+\contentsline {subsection}{\numberline {5.7.4}求最小非负整数解$x$和此时的$y$}{64}{subsection.5.7.4}
+\contentsline {section}{\numberline {5.8}模线性方程组}{64}{section.5.8}
+\contentsline {subsection}{\numberline {5.8.1}利用扩展欧几里德求解模线性同余方程 $ax\equiv b(mod n)$}{65}{subsection.5.8.1}
+\contentsline {section}{\numberline {5.9}中国剩余定理}{67}{section.5.9}
+\contentsline {subsection}{\numberline {5.9.1}模数互素}{67}{subsection.5.9.1}
+\contentsline {subsection}{\numberline {5.9.2}模数不互素}{67}{subsection.5.9.2}
+\contentsline {section}{\numberline {5.10}法雷级数}{68}{section.5.10}
+\contentsline {subsection}{\numberline {5.10.1}介绍}{68}{subsection.5.10.1}
+\contentsline {subsection}{\numberline {5.10.2}$n$级法雷数列}{69}{subsection.5.10.2}
+\contentsline {subsection}{\numberline {5.10.3}法雷数列的构造}{69}{subsection.5.10.3}
+\contentsline {subsection}{\numberline {5.10.4}求$n$级法雷级数个数}{69}{subsection.5.10.4}
+\contentsline {subsection}{\numberline {5.10.5}性质}{69}{subsection.5.10.5}
+\contentsline {section}{\numberline {5.11}原根}{70}{section.5.11}
+\contentsline {subsection}{\numberline {5.11.1}介绍}{70}{subsection.5.11.1}
+\contentsline {subsection}{\numberline {5.11.2}求模素数$p$的所有原根}{71}{subsection.5.11.2}
+\contentsline {section}{\numberline {5.12}$BSGS$算法}{72}{section.5.12}
+\contentsline {subsection}{\numberline {5.12.1}扩展$BSGS(gcd(a, p) \ !=\ 1)$}{73}{subsection.5.12.1}
+\contentsline {section}{\numberline {5.13}莫比乌斯反演}{74}{section.5.13}
+\contentsline {subsection}{\numberline {5.13.1}积性函数}{74}{subsection.5.13.1}
+\contentsline {subsection}{\numberline {5.13.2}狄利克雷卷积}{74}{subsection.5.13.2}
+\contentsline {subsection}{\numberline {5.13.3}莫比乌斯反演公式}{74}{subsection.5.13.3}
+\contentsline {subsection}{\numberline {5.13.4}莫比乌斯函数$\mu $}{74}{subsection.5.13.4}
+\contentsline {subsection}{\numberline {5.13.5}线性筛求解积性函数}{75}{subsection.5.13.5}
+\contentsline {section}{\numberline {5.14}反素数}{79}{section.5.14}
+\contentsline {subsection}{\numberline {5.14.1}介绍}{79}{subsection.5.14.1}
+\contentsline {subsection}{\numberline {5.14.2}求最小的$n$使得其约数个数为$x$}{79}{subsection.5.14.2}
+\contentsline {section}{\numberline {5.15}卢卡斯定理}{80}{section.5.15}
+\contentsline {subsection}{\numberline {5.15.1}给定$n$求$C_{n}^{m}(0\leq m\leq n\leq 10^8)$为奇数的$m$个数}{81}{subsection.5.15.1}
+\contentsline {section}{\numberline {5.16}特殊方法}{82}{section.5.16}
+\contentsline {subsection}{\numberline {5.16.1}$n^k$的高三位}{82}{subsection.5.16.1}
+\contentsline {subsection}{\numberline {5.16.2}约数个数之和，定义$d(i)$为$i$的约数个数}{82}{subsection.5.16.2}
+\contentsline {subsection}{\numberline {5.16.3}给定$k$，求最小的$n$使得$n$的约数个数恰为$n-k$个$(k\leq 47777)$}{84}{subsection.5.16.3}
+\contentsline {subsection}{\numberline {5.16.4}$C_{n}^{m}\penalty \z@ \mkern 12mu{\mathgroup \symoperators mod}\tmspace +\thinmuskip {.1667em}\tmspace +\thinmuskip {.1667em}\ p(p=p_1*p_2$,且$p_1,p_2$为素数)}{84}{subsection.5.16.4}
+\contentsline {chapter}{\numberline {6}数学相关}{87}{chapter.6}
+\contentsline {section}{\numberline {6.1}Polya原理、Burnside引理}{87}{section.6.1}
+\contentsline {subsection}{\numberline {6.1.1}介绍}{87}{subsection.6.1.1}
+\contentsline {subsection}{\numberline {6.1.2}$Burnside$引理}{87}{subsection.6.1.2}
+\contentsline {subsection}{\numberline {6.1.3}Polya原理}{88}{subsection.6.1.3}
+\contentsline {subsection}{\numberline {6.1.4}$n*n$的方阵，每个小格可涂$m$种颜色，求在旋转操作下本质不同的解的总数}{88}{subsection.6.1.4}
+\contentsline {subsection}{\numberline {6.1.5}各有$a,b,c(a,b,c \geq 0, a+b+c \leq 40)$颗三种颜色，问这些珠子能串成的项链有多少种?考虑翻转和旋转。}{90}{subsection.6.1.5}
+\contentsline {subsection}{\numberline {6.1.6}给出12根等长的火柴棒，每根火柴棒的颜色属于$1-6$中的一种，问能拼成多少种不同的正方体？(考虑旋转)}{92}{subsection.6.1.6}
+\contentsline {subsection}{\numberline {6.1.7}[POJ 2888 Magic Bracelet]}{93}{subsection.6.1.7}
+\contentsline {section}{\numberline {6.2}容斥原理}{97}{section.6.2}
+\contentsline {subsection}{\numberline {6.2.1}求区间$[A,B]$中和$n$互素的数个数？$1\leq A \leq B \leq 10^{15},1\leq n \leq 10^9$}{97}{subsection.6.2.1}
+\contentsline {subsection}{\numberline {6.2.2}给一个$n$，在$p\in [1, n]$范围满足$m^k=p(m \geq 1, k > 1$的数字$p$的个数。$1 \leq n \leq 10^{18}$}{98}{subsection.6.2.2}
+\contentsline {section}{\numberline {6.3}博弈论}{100}{section.6.3}
+\contentsline {subsection}{\numberline {6.3.1}威佐夫博弈$(Wythoff\hskip 1em\relax Game)$}{100}{subsection.6.3.1}
+\contentsline {section}{\numberline {6.4}约瑟夫环问题}{101}{section.6.4}
+\contentsline {subsection}{\numberline {6.4.1}第一次第$m$个人出列，以后每次第$k$个人出列}{101}{subsection.6.4.1}
+\contentsline {subsection}{\numberline {6.4.2}每次都是第2个人出列，求$n$个人最终剩下的编号（编号从1开始）}{101}{subsection.6.4.2}
+\contentsline {subsection}{\numberline {6.4.3}第$i$轮从上一轮出局的人的下一个人开始从$1$报数，报到$i$就停止且报到$i$的这个人出局}{101}{subsection.6.4.3}
+\contentsline {subsection}{\numberline {6.4.4}获得每一轮出列的人的编号}{102}{subsection.6.4.4}
+\contentsline {section}{\numberline {6.5}康托展开}{104}{section.6.5}
+\contentsline {section}{\numberline {6.6}FFT}{106}{section.6.6}
+\contentsline {subsection}{\numberline {6.6.1}UVA 12633 超级车}{107}{subsection.6.6.1}
+\contentsline {subsection}{\numberline {6.6.2}SPOJ Triple Sum}{108}{subsection.6.6.2}
+\contentsline {subsection}{\numberline {6.6.3}HDU 5730 Shell Necklace}{108}{subsection.6.6.3}
+\contentsline {section}{\numberline {6.7}NTT}{109}{section.6.7}
+\contentsline {subsection}{\numberline {6.7.1}HDU 5322 Hope}{110}{subsection.6.7.1}
+\contentsline {subsection}{\numberline {6.7.2}HDU 5552 图计数}{111}{subsection.6.7.2}
+\contentsline {subsection}{\numberline {6.7.3}HDU 5829 卷积平移}{113}{subsection.6.7.3}
+\contentsline {section}{\numberline {6.8}FWT}{114}{section.6.8}
+\contentsline {subsection}{\numberline {6.8.1}HDU 5909 连通块异或和为$i$个数}{116}{subsection.6.8.1}
+\contentsline {chapter}{\numberline {7}动态规划}{119}{chapter.7}
+\contentsline {section}{\numberline {7.1}LIS}{119}{section.7.1}
+\contentsline {subsection}{\numberline {7.1.1}最长非降子序列}{119}{subsection.7.1.1}
+\contentsline {subsection}{\numberline {7.1.2}三维LIS}{119}{subsection.7.1.2}
+\contentsline {section}{\numberline {7.2}区间dp}{122}{section.7.2}
+\contentsline {subsection}{\numberline {7.2.1}LightOJ 1422}{122}{subsection.7.2.1}
+\contentsline {subsection}{\numberline {7.2.2}PKU 1142}{122}{subsection.7.2.2}
+\contentsline {subsection}{\numberline {7.2.3}CF 149 D}{123}{subsection.7.2.3}
+\contentsline {section}{\numberline {7.3}树型dp}{126}{section.7.3}
+\contentsline {subsection}{\numberline {7.3.1}树的直径}{126}{subsection.7.3.1}
+\contentsline {subsection}{\numberline {7.3.2}求树直径的方法}{126}{subsection.7.3.2}
+\contentsline {subsection}{\numberline {7.3.3}HDU 4126}{128}{subsection.7.3.3}
+\contentsline {section}{\numberline {7.4}数位dp}{131}{section.7.4}
+\contentsline {subsection}{\numberline {7.4.1}2014 GCJ Round 1B}{131}{subsection.7.4.1}
+\contentsline {subsection}{\numberline {7.4.2}区间最大上升子序列长度为$K$的数字个数}{131}{subsection.7.4.2}
+\contentsline {subsection}{\numberline {7.4.3}区间所有和7“无关”数字平方和}{132}{subsection.7.4.3}
+\contentsline {subsection}{\numberline {7.4.4}SGU 390 Tickets}{134}{subsection.7.4.4}
+\contentsline {section}{\numberline {7.5}状压dp}{136}{section.7.5}
+\contentsline {subsection}{\numberline {7.5.1}覆盖模型}{136}{subsection.7.5.1}
+\contentsline {subsection}{\numberline {7.5.2}图论模型}{146}{subsection.7.5.2}
+\contentsline {section}{\numberline {7.6}dp优化}{151}{section.7.6}
+\contentsline {subsection}{\numberline {7.6.1}二进制优化}{151}{subsection.7.6.1}
+\contentsline {subsection}{\numberline {7.6.2}单调队列优化}{151}{subsection.7.6.2}
+\contentsline {subsection}{\numberline {7.6.3}斜率优化}{155}{subsection.7.6.3}
+\contentsline {subsection}{\numberline {7.6.4}四边形不等式优化}{157}{subsection.7.6.4}
+\contentsline {subsection}{\numberline {7.6.5}bitset优化}{161}{subsection.7.6.5}
+\contentsline {chapter}{\numberline {8}数据结构}{165}{chapter.8}
+\contentsline {section}{\numberline {8.1}哈希}{165}{section.8.1}
+\contentsline {section}{\numberline {8.2}并查集}{167}{section.8.2}
+\contentsline {subsection}{\numberline {8.2.1}加权并查集}{167}{subsection.8.2.1}
+\contentsline {subsection}{\numberline {8.2.2}分层并查集}{168}{subsection.8.2.2}
+\contentsline {section}{\numberline {8.3}$RMQ$}{175}{section.8.3}
+\contentsline {section}{\numberline {8.4}线段树}{176}{section.8.4}
+\contentsline {subsection}{\numberline {8.4.1}矩形并的周长}{176}{subsection.8.4.1}
+\contentsline {subsection}{\numberline {8.4.2}矩形交的面积}{178}{subsection.8.4.2}
+\contentsline {subsection}{\numberline {8.4.3}矩形并面积}{179}{subsection.8.4.3}
+\contentsline {section}{\numberline {8.5}树状数组}{182}{section.8.5}
+\contentsline {subsection}{\numberline {8.5.1}单点更新，区间求和}{182}{subsection.8.5.1}
+\contentsline {subsection}{\numberline {8.5.2}区间更新，单点求值}{182}{subsection.8.5.2}
+\contentsline {subsection}{\numberline {8.5.3}一维区间更新和区间求和}{182}{subsection.8.5.3}
+\contentsline {subsection}{\numberline {8.5.4}二维区间更新和区间求和}{183}{subsection.8.5.4}
+\contentsline {section}{\numberline {8.6}树上莫队}{186}{section.8.6}
+\contentsline {section}{\numberline {8.7}整体二分}{189}{section.8.7}
+\contentsline {subsection}{\numberline {8.7.1}[POJ 2104:区间第$k$小]}{189}{subsection.8.7.1}
+\contentsline {subsection}{\numberline {8.7.2}[BZOJ 3110 第$k$大数]}{190}{subsection.8.7.2}
+\contentsline {section}{\numberline {8.8}cdq分治(时间分治)}{193}{section.8.8}
+\contentsline {subsection}{\numberline {8.8.1}[NEU 1702 三维逆序对]}{193}{subsection.8.8.1}
+\contentsline {subsection}{\numberline {8.8.2}[UVALive 6776 三维LIS]}{195}{subsection.8.8.2}
+\contentsline {subsection}{\numberline {8.8.3}[BZOJ 3295 动态逆序对]}{196}{subsection.8.8.3}
+\contentsline {subsection}{\numberline {8.8.4}[BZOJ 2244 导弹拦截]}{198}{subsection.8.8.4}
+\contentsline {subsection}{\numberline {8.8.5}[BZOJ 1176 Mokia]}{201}{subsection.8.8.5}
+\contentsline {subsection}{\numberline {8.8.6}[BZOJ 1429 货币兑换Cash]}{203}{subsection.8.8.6}
+\contentsline {subsection}{\numberline {8.8.7}[BZOJ 2961 共点圆]}{205}{subsection.8.8.7}
+\contentsline {chapter}{\numberline {9}图论}{209}{chapter.9}
+\contentsline {section}{\numberline {9.1}最小生成树}{209}{section.9.1}
+\contentsline {subsection}{\numberline {9.1.1}$Kruskal\ Algorithm$}{209}{subsection.9.1.1}
+\contentsline {subsection}{\numberline {9.1.2}$Prim\ Algorithm$}{209}{subsection.9.1.2}
+\contentsline {section}{\numberline {9.2}拓扑排序}{211}{section.9.2}
+\contentsline {section}{\numberline {9.3}欧拉回路}{213}{section.9.3}
+\contentsline {subsection}{\numberline {9.3.1}判断}{213}{subsection.9.3.1}
+\contentsline {subsection}{\numberline {9.3.2}$n$个点和$m$条无向边的图，每条边仅可遍历一次，求图中欧拉路径的条数}{213}{subsection.9.3.2}
+\contentsline {subsection}{\numberline {9.3.3}单词拼接，字典序最小}{214}{subsection.9.3.3}
+\contentsline {subsection}{\numberline {9.3.4}正向反向两次遍历所有边，路径输出}{216}{subsection.9.3.4}
+\contentsline {section}{\numberline {9.4}dfs序}{218}{section.9.4}
+\contentsline {subsection}{\numberline {9.4.1}CF 396 C}{218}{subsection.9.4.1}
+\contentsline {section}{\numberline {9.5}LCA}{220}{section.9.5}
+\contentsline {subsection}{\numberline {9.5.1}暴力求解}{220}{subsection.9.5.1}
+\contentsline {subsection}{\numberline {9.5.2}二分搜索}{220}{subsection.9.5.2}
+\contentsline {subsection}{\numberline {9.5.3}基于RMQ的算法}{221}{subsection.9.5.3}
+\contentsline {subsection}{\numberline {9.5.4}Tarjan算法}{222}{subsection.9.5.4}
+\contentsline {subsection}{\numberline {9.5.5}利用LCA获得树上任意两点距离}{223}{subsection.9.5.5}
+\contentsline {section}{\numberline {9.6}最小树形图}{226}{section.9.6}
+\contentsline {subsection}{\numberline {9.6.1}朱刘算法}{226}{subsection.9.6.1}
+\contentsline {subsection}{\numberline {9.6.2}有固定根}{226}{subsection.9.6.2}
+\contentsline {subsection}{\numberline {9.6.3}无固定根}{228}{subsection.9.6.3}
+\contentsline {subsection}{\numberline {9.6.4}最小树形图路径}{230}{subsection.9.6.4}
+\contentsline {subsection}{\numberline {9.6.5}其他}{232}{subsection.9.6.5}
+\contentsline {section}{\numberline {9.7}生成树计数}{234}{section.9.7}
+\contentsline {subsection}{\numberline {9.7.1}Matrix-Tree定理}{234}{subsection.9.7.1}
+\contentsline {subsection}{\numberline {9.7.2}选择一些边连通使得任意两点之间恰好有一条路径,求不同的选择方案数}{234}{subsection.9.7.2}
+\contentsline {subsection}{\numberline {9.7.3}最小生成树计数}{235}{subsection.9.7.3}
+\contentsline {section}{\numberline {9.8}最短路}{239}{section.9.8}
+\contentsline {subsection}{\numberline {9.8.1}Dijkstra + HeapNode}{239}{subsection.9.8.1}
+\contentsline {subsection}{\numberline {9.8.2}Bellman\_Ford}{239}{subsection.9.8.2}
+\contentsline {subsection}{\numberline {9.8.3}SPFA}{240}{subsection.9.8.3}
+\contentsline {subsection}{\numberline {9.8.4}Floyd\_Warshall}{240}{subsection.9.8.4}
+\contentsline {section}{\numberline {9.9}二分图匹配}{242}{section.9.9}
+\contentsline {subsection}{\numberline {9.9.1}概念}{242}{subsection.9.9.1}
+\contentsline {subsection}{\numberline {9.9.2}二分图的性质}{243}{subsection.9.9.2}
+\contentsline {subsection}{\numberline {9.9.3}二分图的判定}{243}{subsection.9.9.3}
+\contentsline {subsection}{\numberline {9.9.4}匈牙利算法(Hungary Algorithm)}{245}{subsection.9.9.4}
+\contentsline {subsection}{\numberline {9.9.5}输出最小点覆盖的点}{246}{subsection.9.9.5}
+\contentsline {subsection}{\numberline {9.9.6}霍普克洛夫特-卡普算法}{247}{subsection.9.9.6}
+\contentsline {subsection}{\numberline {9.9.7}二分图带权匹配}{249}{subsection.9.9.7}
+\contentsline {subsection}{\numberline {9.9.8}二分图带权匹配拆点}{252}{subsection.9.9.8}
+\contentsline {subsection}{\numberline {9.9.9}稳定婚姻匹配}{253}{subsection.9.9.9}
+\contentsline {section}{\numberline {9.10}普吕弗序列}{254}{section.9.10}
+\contentsline {subsection}{\numberline {9.10.1}由无根树生成普吕弗序列}{255}{subsection.9.10.1}
+\contentsline {subsection}{\numberline {9.10.2}从普吕弗序列还原无根树}{255}{subsection.9.10.2}
+\contentsline {subsection}{\numberline {9.10.3}结论}{255}{subsection.9.10.3}
+\contentsline {subsection}{\numberline {9.10.4}BZOJ 1211}{255}{subsection.9.10.4}
+\contentsline {subsection}{\numberline {9.10.5}HDU 5629}{256}{subsection.9.10.5}
+\contentsline {chapter}{\numberline {10}字符串}{259}{chapter.10}
+\contentsline {section}{\numberline {10.1}KMP}{259}{section.10.1}
+\contentsline {section}{\numberline {10.2}Shift-And算法}{260}{section.10.2}
+\contentsline {section}{\numberline {10.3}字典树}{262}{section.10.3}
+\contentsline {subsection}{\numberline {10.3.1}HDU 1857}{262}{subsection.10.3.1}
+\contentsline {subsection}{\numberline {10.3.2}HDU 5536}{263}{subsection.10.3.2}
+\contentsfinish 

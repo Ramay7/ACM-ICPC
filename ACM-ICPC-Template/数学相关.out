@@ -1,0 +1,14 @@
+\BOOKMARK [0][-]{chapter.1}{数学相关}{}% 1
+\BOOKMARK [1][-]{section.1.1}{Polya原理、Burnside引理}{chapter.1}% 2
+\BOOKMARK [2][-]{subsection.1.1.1}{介绍}{section.1.1}% 3
+\BOOKMARK [2][-]{subsection.1.1.2}{Burnside引理}{section.1.1}% 4
+\BOOKMARK [2][-]{subsection.1.1.3}{Polya原理}{section.1.1}% 5
+\BOOKMARK [2][-]{subsection.1.1.4}{n*n的方阵，每个小格可涂m种颜色，求在旋转操作下本质不同的解的总数}{section.1.1}% 6
+\BOOKMARK [2][-]{subsection.1.1.5}{各有a,b,c\(a,b,c 0, a+b+c 40\)颗三种颜色，问这些珠子能串成的项链有多少种?考虑翻转和旋转。}{section.1.1}% 7
+\BOOKMARK [2][-]{subsection.1.1.6}{给出12根等长的火柴棒，每根火柴棒的颜色属于1-6中的一种，问能拼成多少种不同的正方体？\(考虑旋转\)}{section.1.1}% 8
+\BOOKMARK [2][-]{subsection.1.1.7}{[POJ\0402888\040Magic\040Bracelet]}{section.1.1}% 9
+\BOOKMARK [1][-]{section.1.2}{容斥原理}{chapter.1}% 10
+\BOOKMARK [2][-]{subsection.1.2.1}{求区间[A,B]中和n互素的数个数？1A B 1015,1n 109}{section.1.2}% 11
+\BOOKMARK [2][-]{subsection.1.2.2}{给一个n，在p[1, n]范围满足mk=p\(m 1, k > 1的数字p的个数。1 n 1018}{section.1.2}% 12
+\BOOKMARK [1][-]{section.1.3}{博弈论}{chapter.1}% 13
+\BOOKMARK [2][-]{subsection.1.3.1}{威佐夫博弈\(Wythoff Game\)}{section.1.3}% 14
